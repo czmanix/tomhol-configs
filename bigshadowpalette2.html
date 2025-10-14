@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>Big Shadow config</title>
+  
+  <style>
+    body {
+        background-color:black;
+        color:white;
+        font-family:tahoma;
+    }    
+    .cblock {
+        width:40px;
+        height:40px;
+        border:1px solid black;
+    }
+    .white {
+        background-color:white;
+    }
+    .red {
+        background-color:red;
+    }
+    .green {
+       background-color:#0F0;
+    }
+    .blue {
+        background-color:blue;
+    }
+    .cyan {
+        background-color:cyan;
+    }
+    .magenta {
+        background-color:magenta;
+    }
+    .yellow {
+        background-color:yellow;
+    }
+    #save_button {
+        width:80px;
+        height:40px;
+        color:black;
+        text-align:center;
+        font-size:30px;
+        background-color:#CCC;
+    }
+    td {
+        padding:0px;
+        border:0px;
+    }
+    #cn {
+        width:80px;
+        height:120px;
+        margin-top:20px;
+    }
+
+
+    .sp-palette {
+max-width: 400px;
+}
+
+.label {
+    background: #444;
+    padding:8px;    
+    border-radius: 4px;
+    color: #eee;
+    margin-top: 10px;
+    display:inline-block;
+}
+
+    </style>
+  
+    <script type='text/javascript' src='jquery.js'></script>
+    <link rel="stylesheet" type="text/css" href="spectrum.css">
+  <script type='text/javascript' src="spectrum.js"></script>
+
+    <script>
+              //Setup to allow easy adding more options later
+      function color2pebcol (color) {
+          return 192+16*(color.r>>6)+4*(color.g>>6)+(color.b>>6);
+      }
+    
+      function pebcol2color (pebcol) {
+          var r,g,b,color;
+          b=(pebcol & 3);
+          g=(pebcol & 12)>>2;
+          r=(pebcol & 48)>>4;
+          color=tinycolor("rgb "+r*85+" "+g*85+" "+b*85);
+          return color.toHexString();
+          
+      }  
+      
+      function saveOptions() {
+          var formular=document.getElementById("cfgform").elements;
+        var options = {
+          "c1": color2pebcol($("#face").spectrum("get").toRgb()),
+          "c2": color2pebcol($("#highlight").spectrum("get").toRgb()),
+          "c3": color2pebcol($("#shadow").spectrum("get").toRgb()),
+          "c4": color2pebcol($("#back").spectrum("get").toRgb()),
+          "c5": document.getElementById("cfgform").elements.namedItem("c5").checked,
+          "c6": document.getElementById("cfgform").elements.namedItem("c6").checked
+
+        }
+        console.log(JSON.stringify(options));
+        return options;
+      };
+
+    function vubecnic() {
+        var c1 = gup('c1' );
+        var c2 = gup('c2' );
+        var c3 = gup('c3' );
+        var c4 = gup('c4' );
+        var c5 = gup('c5' );
+        var c6 = gup('c6' );
+        if (c1[3]=="l") {c1=""} // null
+
+        if (c1>"") {
+            document.getElementById("cfgform").elements.namedItem("c1").value= c1;
+            setColors(pebcol2color(c1),pebcol2color(c2),pebcol2color(c3),pebcol2color(c4));
+            document.getElementById("cfgform").elements.namedItem("c5").checked = (c5=="true");
+            document.getElementById("cfgform").elements.namedItem("c6").checked = (c6=="true");
+            } else {
+            c1=document.getElementById("cfgform").elements.namedItem("c1").value;
+            setColors("#FFF","#AAA","#555","#000");
+            }        
+        
+        //drawNumber("#FFF","#AAA","#555");    
+    }
+    
+    function drawNumber(face,lside,dside,back) {
+        var c = document.getElementById("cn");
+        var ctx = c.getContext("2d");
+        ctx.fillStyle = back;
+        ctx.fillRect(0,0,120,160);
+        ctx.translate(20,20);
+        ctx.fillStyle = face;
+        ctx.fillRect(0,0,60,20);
+        ctx.fillRect(0,20,20,80);
+        ctx.fillRect(20,40,40,20);
+        ctx.fillRect(20,80,40,20);
+        ctx.fillRect(40,60,20,20);
+        ctx.fillStyle = lside;
+        ctx.beginPath();
+        ctx.moveTo(60,0);
+        ctx.lineTo(60,20);
+        ctx.lineTo(80,40);
+        ctx.lineTo(80,20);
+        ctx.closePath();
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(60,40);
+        ctx.lineTo(60,100);
+        ctx.lineTo(80,120);
+        ctx.lineTo(80,60);
+        ctx.closePath();
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(20,20);
+        ctx.lineTo(40,40);
+        ctx.lineTo(20,40);
+        ctx.closePath();
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(20,60);
+        ctx.lineTo(40,80);
+        ctx.lineTo(20,80);
+        ctx.closePath();
+        ctx.fill();
+        ctx.fillStyle = dside;
+        ctx.beginPath();
+        ctx.moveTo(20,20);
+        ctx.lineTo(40,40);
+        ctx.lineTo(80,40);
+        ctx.lineTo(60,20);
+        ctx.closePath();
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(0,100);
+        ctx.lineTo(20,120);
+        ctx.lineTo(80,120);
+        ctx.lineTo(60,100);
+        ctx.closePath();
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(20,60);
+        ctx.lineTo(40,80);
+        ctx.lineTo(40,60);
+        ctx.closePath();
+        ctx.fill();
+        ctx.translate(-20,-20);
+    }
+    
+    function gup( name )
+    {
+      name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
+      var regexS = "[\\?&]"+name+"=([^&#]*)";
+      var regex = new RegExp( regexS );
+      var results = regex.exec( window.location.href );
+      if( results == null )
+        return null;
+      else
+        return results[1];
+    }
+    
+    
+    function setColors(face,lside,dside,back) {
+
+    $("#face").spectrum("set",face);
+    $("#highlight").spectrum("set",lside);
+    $("#shadow").spectrum("set",dside);
+    $("#back").spectrum("set",back);
+    
+    drawNumber(face,lside,dside,back);
+    }
+    
+    
+    </script>
+
+
+
+</head>
+  <body onload="vubecnic()">
+     <form id=cfgform>
+     
+    <h2>Select color</h2>
+    <table>
+        <tr>
+            <td align=center><label onclick="setColors('#FFF','#AAA','#555','#000')"><input type="radio" name="c1" value="255" checked="checked"/><div class="cblock white"></div></label></td>
+            <td align=center><label onclick="setColors('#F00','#A00','#500','#000')"><input type="radio" name="c1" value="240" /><div class="cblock red"></div></label></td>
+            <td align=center><label onclick="setColors('#0F0','#0A0','#050','#000')"><input type="radio" name="c1" value="204" /><div class="cblock green"></div></label></td>
+            <td align=center><label onclick="setColors('#00F','#00A','#005','#000')"><input type="radio" name="c1" value="195" /><div class="cblock blue"></div></label></td>
+            <td align=center><label onclick="setColors('#FF0','#AA0','#550','#000')"><input type="radio" name="c1" value="252" /><div class="cblock yellow"></div></label></td>
+            <td align=center><label onclick="setColors('#0FF','#0AA','#055','#000')"><input type="radio" name="c1" value="207" /><div class="cblock cyan"></div></label></td>
+            <td align=center><label onclick="setColors('#F0F','#A0A','#505','#000')"><input type="radio" name="c1" value="243" /><div class="cblock magenta"></div></label></td>
+        </tr>
+        <tr>
+            <td colspan=2><div id="save_button">SAVE</div></td>
+            <td colspan=5 valign=top align=right><canvas width=120 height=160 id=cn></canvas></td>
+        </tr>
+    </table>
+   
+    
+<input type='text' id="face"/>
+<input type='text' id="highlight"/>
+<input type='text' id="shadow"/>
+<input type='text' id="back"/>
+
+    <p/><label><input type="checkbox" name=c5 id=c5 value="on" checked> Show a status screen</label>
+    <p/><label><input type="checkbox" name=c6 id=c6 value="on" checked> Vibrate on lost Bluetooth</label>
+     </form>
+<br />
+
+  
+
+
+<script type='text/javascript'>//<![CDATA[ 
+
+function printColor(source,color) {
+var f,h,s,b;
+    $(source).spectrum("set",color);
+   f=$("#face").spectrum("get");        
+   h=$("#highlight").spectrum("get");        
+   s=$("#shadow").spectrum("get");        
+   b=$("#back").spectrum("get");        
+   drawNumber(f.toHexString(),h.toHexString(),s.toHexString(),b.toHexString());       
+}
+
+$("#highlight").spectrum({
+    color: "#000",    
+    showPaletteOnly: true,
+    change: function(color) {
+        printColor("#highlight",color);
+    },
+    hide: function(color) {
+        printColor("#highlight",color);
+    },
+    palette: [
+        ["#000", "#500", "#A00","#F00","#050", "#550", "#A50","#F50"],
+        ["#005", "#505", "#A05","#F05","#055", "#555", "#A55","#F55"],
+        ["#00A", "#50A", "#A0A","#F0A","#05A", "#55A", "#A5A","#F5A"],
+        ["#00F", "#50F", "#A0F","#F0F","#05F", "#55F", "#A5F","#F5F"],
+        ["#0A0", "#5A0", "#AA0","#FA0","#0F0", "#5F0", "#AF0","#FF0"],
+        ["#0A5", "#5A5", "#AA5","#FA5","#0F5", "#5F5", "#AF5","#FF5"],
+        ["#0AA", "#5AA", "#AAA","#FAA","#0FA", "#5FA", "#AFA","#FFA"],
+        ["#0AF", "#5AF", "#AAF","#FAF","#0FF", "#5FF", "#AFF","#FFF"]
+        
+    ]
+});
+$("#face").spectrum({
+    color: "#000",    
+    showPaletteOnly: true,
+    change: function(color) {
+        printColor("#face",color);
+    },
+    hide: function(color) {
+        printColor("#face",color);
+    },
+    palette: [
+        ["#000", "#500", "#A00","#F00","#050", "#550", "#A50","#F50"],
+        ["#005", "#505", "#A05","#F05","#055", "#555", "#A55","#F55"],
+        ["#00A", "#50A", "#A0A","#F0A","#05A", "#55A", "#A5A","#F5A"],
+        ["#00F", "#50F", "#A0F","#F0F","#05F", "#55F", "#A5F","#F5F"],
+        ["#0A0", "#5A0", "#AA0","#FA0","#0F0", "#5F0", "#AF0","#FF0"],
+        ["#0A5", "#5A5", "#AA5","#FA5","#0F5", "#5F5", "#AF5","#FF5"],
+        ["#0AA", "#5AA", "#AAA","#FAA","#0FA", "#5FA", "#AFA","#FFA"],
+        ["#0AF", "#5AF", "#AAF","#FAF","#0FF", "#5FF", "#AFF","#FFF"]
+        
+    ]
+});
+$("#shadow").spectrum({
+    color: "#000",    
+    showPaletteOnly: true,
+    change: function(color) {
+        printColor("#shadow",color);
+    },
+    hide: function(color) {
+        printColor("#shadow",color);
+    },
+    palette: [
+        ["#000", "#500", "#A00","#F00","#050", "#550", "#A50","#F50"],
+        ["#005", "#505", "#A05","#F05","#055", "#555", "#A55","#F55"],
+        ["#00A", "#50A", "#A0A","#F0A","#05A", "#55A", "#A5A","#F5A"],
+        ["#00F", "#50F", "#A0F","#F0F","#05F", "#55F", "#A5F","#F5F"],
+        ["#0A0", "#5A0", "#AA0","#FA0","#0F0", "#5F0", "#AF0","#FF0"],
+        ["#0A5", "#5A5", "#AA5","#FA5","#0F5", "#5F5", "#AF5","#FF5"],
+        ["#0AA", "#5AA", "#AAA","#FAA","#0FA", "#5FA", "#AFA","#FFA"],
+        ["#0AF", "#5AF", "#AAF","#FAF","#0FF", "#5FF", "#AFF","#FFF"]
+        
+    ]
+});
+$("#back").spectrum({
+    color: "#000",    
+    showPaletteOnly: true,
+    change: function(color) {
+        printColor("#back",color);
+    },
+    hide: function(color) {
+        printColor("#back",color);
+    },
+    palette: [
+        ["#000", "#500", "#A00","#F00","#050", "#550", "#A50","#F50"],
+        ["#005", "#505", "#A05","#F05","#055", "#555", "#A55","#F55"],
+        ["#00A", "#50A", "#A0A","#F0A","#05A", "#55A", "#A5A","#F5A"],
+        ["#00F", "#50F", "#A0F","#F0F","#05F", "#55F", "#A5F","#F5F"],
+        ["#0A0", "#5A0", "#AA0","#FA0","#0F0", "#5F0", "#AF0","#FF0"],
+        ["#0A5", "#5A5", "#AA5","#FA5","#0F5", "#5F5", "#AF5","#FF5"],
+        ["#0AA", "#5AA", "#AAA","#FAA","#0FA", "#5FA", "#AFA","#FFA"],
+        ["#0AF", "#5AF", "#AAF","#FAF","#0FF", "#5FF", "#AFF","#FFF"]
+        
+    ]
+});
+
+
+
+      //Setup to allow easy adding more options later
+
+      var submitButton = document.getElementById("save_button");
+
+      submitButton.addEventListener("click", 
+        function() {
+          console.log("Submit");
+          var options = saveOptions();
+          
+
+          var return_to = decodeURIComponent(gup('return_to'));
+          if (return_to=="null") {return_to='pebblejs://close#'};
+          
+          var loc = return_to + encodeURIComponent(JSON.stringify(options));
+          console.log(return_to);
+
+          console.log(loc);
+          document.location = loc;
+        } , 
+      false);
+
+
+
+
+//]]>  
+
+</script>
+
+
+</body>
+
+
+</html>
