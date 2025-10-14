@@ -1,0 +1,140 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Matrix Configuration</title>
+  
+  <style>
+     @font-face{font-family:'matrix';src:url('MATRIX.ttf') format('truetype');}
+     .font-bold{font-family:matrix,'Helvetica Neue',Helvetica,Arial,sans-serif;font-weight:bold;font-style:normal;}
+    body {
+        background:black;
+        color:white;
+        font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-weight:bold;font-style:normal;
+    }    
+
+    </style>
+    <script>
+      //Setup to allow easy adding more options later
+      function saveOptions() {
+          var formular=document.getElementById("cfgform").elements;
+          var intensity=0;
+          if (formular.namedItem("min").checked) intensity+=Number(formular.namedItem("min").value);
+          if (formular.namedItem("sec").checked) intensity+=Number(formular.namedItem("sec").value);
+          if (formular.namedItem("start").checked) intensity+=Number(formular.namedItem("start").value);
+          if (formular.namedItem("nonstop").checked) intensity+=Number(formular.namedItem("nonstop").value);
+          if (formular.namedItem("shake").checked) intensity+=Number(formular.namedItem("shake").value);
+
+        var options = {
+          "col_scheme": Number(formular.namedItem("color").value),
+          "intensity": intensity,
+        }
+        return options;
+      };
+    
+    function vubecnic() {
+        var colscheme = gup( 'col_scheme' );
+        if (colscheme>"") {document.getElementById("cfgform").elements.namedItem("color").value= colscheme;}
+        var intensity = gup( 'intensity' );
+        if (intensity>"") {
+            intensity=Number(intensity);
+            document.getElementById("cfgform").elements.namedItem("min").checked=((intensity&1)>0);
+            document.getElementById("cfgform").elements.namedItem("start").checked=((intensity&2)>0);
+            document.getElementById("cfgform").elements.namedItem("sec").checked=((intensity&4)>0);
+            document.getElementById("cfgform").elements.namedItem("nonstop").checked=((intensity&8)>0);
+            document.getElementById("cfgform").elements.namedItem("shake").checked=((intensity&16)>0);
+            }
+        
+    }
+    
+    function gup( name )
+    {
+      name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
+      var regexS = "[\\?&]"+name+"=([^&#]*)";
+      var regex = new RegExp( regexS );
+      var results = regex.exec( window.location.href );
+      if( results == null )
+        return null;
+      else
+        return results[1];
+    }
+    
+        function getQueryParam(variable, default_) {
+            var query = location.search.substring(1);
+            var vars = query.split('&');
+            for (var i = 0; i < vars.length; i++) {
+                var pair = vars[i].split('=');
+                if (pair[0] == variable)
+                    return decodeURIComponent(pair[1]);
+            }
+            return default_ || false;
+        }      
+
+    
+    </script>
+    </head>
+  <body onload="vubecnic()">
+
+    <p class=font-bold style="font-size:50pt;color:green;text-align:center;margin-bottom:0pt;">MATRIX TIME</p>
+     <form id=cfgform>
+    <fieldset style="border-color:green">
+    <legend>Color scheme</legend>
+    <label><input type="radio" name="color" value="0" checked> Green</label><br/>
+    <label><input type="radio" name="color" value="1"> Yellow</label><br/>
+    <label><input type="radio" name="color" value="2"> Blue</label><br/>
+    <label><input type="radio" name="color" value="3"> Red</label><br/>
+    <label><input type="radio" name="color" value="4"> White</label><br/>
+    </fieldset>
+    <br/>
+    
+    <fieldset style="border-color:green">
+    <legend>Animations</legend>
+    <label><input type="checkbox" name="min" value="1" checked> each minute</label><br/>
+    <label><input type="checkbox" name="start" value="2"> at the start</label><br/>
+    <label><input type="checkbox" name="shake" value="16"> on shake</label><br/>
+    <label><input type="checkbox" name="sec" value="4"> tick each second</label><br/>
+    <label><input type="checkbox" name="nonstop" value="8"> nonstop (goodbye battery)</label><br/>
+</fieldset>
+    
+
+
+    </form>
+   
+    </p>
+
+    <p>
+    <button id="save_button" class=font-bold style="font-size:16pt">SAVE</button>
+    </p>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="holcik@gmail.com">
+<input type="hidden" name="lc" value="CZ">
+<input type="hidden" name="item_name" value="TomHol">
+<input type="hidden" name="item_number" value="pebbleMatrix">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+<img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
+</form>
+
+      <script>
+      
+      //Setup to allow easy adding more options later
+
+      var submitButton = document.getElementById("save_button");
+      submitButton.addEventListener("click", 
+        function() {
+
+          var options = saveOptions();
+          console.log(options);
+             var return_to = getQueryParam('return_to', 'pebblejs://close#');
+          var location = return_to + encodeURIComponent(JSON.stringify(options));
+       
+          document.location = location;
+        }, 
+      false);
+    </script>
+
+      </body>
+</html>
