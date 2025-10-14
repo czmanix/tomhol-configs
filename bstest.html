@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <title>Big Shadow config</title>
+  
+  <style>
+    body {
+        background-color:black;
+        color:white;
+        font-family:tahoma;
+    }    
+    .cblock {
+        width:40px;
+        height:40px;
+        border:1px solid black;
+    }
+    .white {
+        background-color:white;
+    }
+    .red {
+        background-color:red;
+    }
+    .green {
+       background-color:#0F0;
+    }
+    .blue {
+        background-color:blue;
+    }
+    .cyan {
+        background-color:cyan;
+    }
+    .magenta {
+        background-color:magenta;
+    }
+    .yellow {
+        background-color:yellow;
+    }
+    #save_button {
+        width:80px;
+        height:40px;
+        color:black;
+        text-align:center;
+        font-size:30px;
+        background-color:#CCC;
+    }
+    td {
+        padding:0px;
+        border:0px;
+    }
+    #cn {
+        width:80px;
+        height:120px;
+        margin-top:20px;
+    }
+
+
+    .sp-palette {
+max-width: 400px;
+}
+
+.label {
+    background: #444;
+    padding:8px;    
+    border-radius: 4px;
+    color: #eee;
+    margin-top: 10px;
+    display:inline-block;
+}
+
+    </style>
+  
+  <script type='text/javascript' src='jquery.js'></script>
+  <link rel="stylesheet" type="text/css" href="spectrum.css">
+  <script type='text/javascript' src="spectrum.js"></script>
+<script>
+    
+    function printColor(source,color) {
+var f,h,s,b;
+    $(source).spectrum("set",color);
+   f=$("#face").spectrum("get");        
+}
+
+function onloadik() {
+
+$("#face").value="test";
+
+$("#face").spectrum({
+    color: "#000",    
+    showPaletteOnly: true,
+    
+    
+    change: function(color) {
+        printColor("#face",color);
+    },
+    hide: function(color) {
+        printColor("#face",color);
+    },
+    palette: [
+        ["#000", "#500", "#A00","#F00","#050", "#550", "#A50","#F50"],
+        ["#005", "#505", "#A05","#F05","#055", "#555", "#A55","#F55"],
+        ["#00A", "#50A", "#A0A","#F0A","#05A", "#55A", "#A5A","#F5A"],
+        ["#00F", "#50F", "#A0F","#F0F","#05F", "#55F", "#A5F","#F5F"],
+        ["#0A0", "#5A0", "#AA0","#FA0","#0F0", "#5F0", "#AF0","#FF0"],
+        ["#0A5", "#5A5", "#AA5","#FA5","#0F5", "#5F5", "#AF5","#FF5"],
+        ["#0AA", "#5AA", "#AAA","#FAA","#0FA", "#5FA", "#AFA","#FFA"],
+        ["#0AF", "#5AF", "#AAF","#FAF","#0FF", "#5FF", "#AFF","#FFF"]
+        
+    ]
+});
+
+
+
+}
+</script>
+
+</head>
+  <body onload="onloadik()">
+
+    
+<input type='text' id="face"/>
+
+<br />
+
+  
+
+
+<script type='text/javascript'>//<![CDATA[ 
+
+
+
+
+//]]>  
+
+</script>
+
+
+</body>
+
+
+</html>

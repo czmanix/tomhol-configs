@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html>
+
+<style>
+    body {
+        text-align:center;
+        font-family: Arial;
+        font-weight: bold;
+        font-size:12pt;
+        color:white;
+    }
+  .dropdown {
+        font-family: Arial;
+        font-weight: bold;
+        font-size:12pt;
+      
+  }
+    
+ .myButton {
+	background:linear-gradient(to bottom, #fffde8 5%, #ffb545 100%);
+	background-color:#f7e845;
+	-webkit-border-radius:28px;
+	border-radius:28px;
+	border:1px solid #bebfc2;
+	display:inline-block;
+	cursor:pointer;
+	color:#1440c7;
+	font-family:Arial;
+	font-size:17px;
+	font-style:italic;
+	padding:5px 19px;
+	text-decoration:none;
+	text-shadow:0px 1px 0px #000000;
+}
+
+.myButton:active {
+	position:relative;
+	top:1px;
+}
+
+    
+    
+    
+</style>
+<script type='text/javascript' src='jquery.js'></script>
+<link rel="stylesheet" type="text/css" href="spectrum.css">
+ <script type='text/javascript' src="spectrum.js"></script>
+
+<script>
+
+var cBack = "#000";
+var cMin = "#FF0";
+var cMinb = "#F00";
+var cMin0 = "#FFF";
+var cMin0b = "#F00";
+var cHour = "#F0A";
+var cHourb = "#F5F";
+var cHour0 = "#FFF";
+var cHour0b = "#F5F";
+var pMin = 12; //24 max
+var pHour = 6; //12 max
+
+function color2pebcol (color) {
+  return 192+16*(color.r>>6)+4*(color.g>>6)+(color.b>>6);
+}
+
+function pebcol2color (pebcol) {
+  var r,g,b,color;
+  b=(pebcol & 3);
+  g=(pebcol & 12)>>2;
+  r=(pebcol & 48)>>4;
+  color=tinycolor("rgb "+r*85+" "+g*85+" "+b*85);
+  return color.toHexString();
+  
+}  
+
+function gup( name ) {
+  name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
+  var regexS = "[\\?&]"+name+"=([^&#]*)";
+  var regex = new RegExp( regexS );
+  var results = regex.exec( window.location.href );
+  if( results == null )
+    return null;
+  else
+    return results[1];
+}
+
+function redrawFlower() {
+    var d=new Date();
+    var mm=d.getMinutes();
+    var hh=d.getHours();
+    
+    var c = document.getElementById("myCanvas");
+    var ctx = c.getContext("2d");
+    ctx.save();
+    ctx.scale(1.5,1.5);
+    ctx.fillStyle=cBack;
+    ctx.fillRect(0,0,180,180);
+    
+    ctx.translate(90,90);
+    ctx.rotate((270+mm*6)*Math.PI/180);
+
+    //minuty
+    ctx.fillStyle=cMin;
+    ctx.strokeStyle=cMin;
+    ctx.lineWidth=5;
+    for (i=1;i<=pMin;i++) {
+        ctx.rotate((360/pMin)*Math.PI/180);
+        ctx.beginPath();
+        ctx.moveTo(84, 0);
+        ctx.bezierCurveTo(69, -20, 30, -20, 0, 0);
+        ctx.closePath();
+        if (i==pMin) {
+          ctx.fillStyle=cMin0;
+          ctx.strokeStyle=cMin0;
+        } 
+        ctx.stroke();
+        ctx.fill();
+    }
+    
+    ctx.strokeStyle=cMinb;
+    ctx.fillStyle=cMin;
+    
+    for (i=1;i<=pMin;i++) {
+        ctx.rotate((360/pMin)*Math.PI/180);
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.bezierCurveTo(30, 20, 69, 20, 87, 0);
+        if (i==pMin) {
+          ctx.fillStyle=cMin0;
+          ctx.strokeStyle=cMin0b;
+        }
+        ctx.stroke();
+        ctx.fill();
+    }
+    //hodiny 
+    
+    ctx.restore();
+    ctx.save();
+    ctx.scale(1.5,1.5);
+    ctx.translate(90,90);
+    ctx.rotate((270+hh*30+mm/2)*Math.PI/180);
+
+    
+    ctx.fillStyle=cHour;
+    ctx.strokeStyle=cHour;
+    ctx.lineWidth=3;
+    for (i=1;i<=pHour;i++) {
+        ctx.rotate((360/pHour)*Math.PI/180);
+        ctx.beginPath();
+        ctx.moveTo(50, 0);
+        ctx.bezierCurveTo(35, -25, 15, -25, 0, 0);
+        ctx.closePath();
+        if (i==pHour) {
+          ctx.fillStyle=cHour0;
+          ctx.strokeStyle=cHour0;
+        } 
+        ctx.stroke();
+        ctx.fill();
+    }
+    
+    ctx.strokeStyle=cHourb;
+    ctx.fillStyle=cHour;
+    
+    for (i=1;i<=pHour;i++) {
+        ctx.rotate((360/pHour)*Math.PI/180);
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.bezierCurveTo(15, 25, 35, 25, 50, 0);
+        if (i==pHour) {
+          ctx.fillStyle=cHour0;
+          ctx.strokeStyle=cHour0b;
+        }
+        ctx.stroke();
+        ctx.fill();
+    }
+    
+    
+    ctx.restore();
+}
+
+
+function saveOptions() {
+    var options = {
+      "cmin": color2pebcol($("#cmin").spectrum("get").toRgb()),
+      "cmin0": color2pebcol($("#cmin0").spectrum("get").toRgb()),
+      "cminb": color2pebcol($("#cminb").spectrum("get").toRgb()),
+      "cmin0b": color2pebcol($("#cmin0b").spectrum("get").toRgb()),
+      "chour": color2pebcol($("#chour").spectrum("get").toRgb()),
+      "chour0": color2pebcol($("#chour0").spectrum("get").toRgb()),
+      "chourb": color2pebcol($("#chourb").spectrum("get").toRgb()),
+      "chour0b": color2pebcol($("#chour0b").spectrum("get").toRgb()),
+      "pmin": document.getElementById("pmin").value,
+      "phour": document.getElementById("phour").value,
+    }
+    console.log(JSON.stringify(options));
+    return options;
+  };
+
+function init() {
+    var ppMin = gup('pmin' );
+    var ppHour = gup('phour' );
+    var pcMin = gup('cmin' );
+    var pcMin0 = gup('cmin0' );
+    var pcMin0b = gup('cmin0b' );
+    var pcMinb = gup('cminb' );
+    var pcHour = gup('chour' );
+    var pcHour0 = gup('chour0' );
+    var pcHour0b = gup('chour0b' );
+    var pcHourb = gup('chourb' );
+    if (ppMin>"") {
+        pMin= ppMin;
+        pHour= ppHour;
+        cMin=pebcol2color(pcMin);
+        cMin0=pebcol2color(pcMin0);
+        cMinb=pebcol2color(pcMinb);
+        cMin0b=pebcol2color(pcMin0b);
+        cHour=pebcol2color(pcHour);
+        cHour0=pebcol2color(pcHour0);
+        cHourb=pebcol2color(pcHourb);
+        cHour0b=pebcol2color(pcHour0b);
+    }
+
+document.getElementById('pmin').value=pMin;    
+document.getElementById('phour').value=pHour;    
+    
+$("#cmin").spectrum({
+    color: cMin,    
+    showPaletteOnly: true,
+    change: function(color) {
+        cMin=color;
+        redrawFlower();
+    },
+    hide: function(color) {
+        cMin=color;
+        redrawFlower();
+    },
+    palette: [
+        ["#000", "#500", "#A00","#F00","#050", "#550", "#A50","#F50"],
+        ["#005", "#505", "#A05","#F05","#055", "#555", "#A55","#F55"],
+        ["#00A", "#50A", "#A0A","#F0A","#05A", "#55A", "#A5A","#F5A"],
+        ["#00F", "#50F", "#A0F","#F0F","#05F", "#55F", "#A5F","#F5F"],
+        ["#0A0", "#5A0", "#AA0","#FA0","#0F0", "#5F0", "#AF0","#FF0"],
+        ["#0A5", "#5A5", "#AA5","#FA5","#0F5", "#5F5", "#AF5","#FF5"],
+        ["#0AA", "#5AA", "#AAA","#FAA","#0FA", "#5FA", "#AFA","#FFA"],
+        ["#0AF", "#5AF", "#AAF","#FAF","#0FF", "#5FF", "#AFF","#FFF"]
+        
+    ]
+});
+$("#cmin0").spectrum({
+    color: cMin0,    
+    showPaletteOnly: true,
+    change: function(color) {
+        cMin0=color;
+        redrawFlower();
+    },
+    hide: function(color) {
+        cMin0=color;
+        redrawFlower();
+    },
+    palette: [
+        ["#000", "#500", "#A00","#F00","#050", "#550", "#A50","#F50"],
+        ["#005", "#505", "#A05","#F05","#055", "#555", "#A55","#F55"],
+        ["#00A", "#50A", "#A0A","#F0A","#05A", "#55A", "#A5A","#F5A"],
+        ["#00F", "#50F", "#A0F","#F0F","#05F", "#55F", "#A5F","#F5F"],
+        ["#0A0", "#5A0", "#AA0","#FA0","#0F0", "#5F0", "#AF0","#FF0"],
+        ["#0A5", "#5A5", "#AA5","#FA5","#0F5", "#5F5", "#AF5","#FF5"],
+        ["#0AA", "#5AA", "#AAA","#FAA","#0FA", "#5FA", "#AFA","#FFA"],
+        ["#0AF", "#5AF", "#AAF","#FAF","#0FF", "#5FF", "#AFF","#FFF"]
+        
+    ]
+});
+$("#cminb").spectrum({
+    color: cMinb,    
+    showPaletteOnly: true,
+    change: function(color) {
+        cMinb=color;
+        redrawFlower();
+    },
+    hide: function(color) {
+        cMinb=color;
+        redrawFlower();
+    },
+    palette: [
+        ["#000", "#500", "#A00","#F00","#050", "#550", "#A50","#F50"],
+        ["#005", "#505", "#A05","#F05","#055", "#555", "#A55","#F55"],
+        ["#00A", "#50A", "#A0A","#F0A","#05A", "#55A", "#A5A","#F5A"],
+        ["#00F", "#50F", "#A0F","#F0F","#05F", "#55F", "#A5F","#F5F"],
+        ["#0A0", "#5A0", "#AA0","#FA0","#0F0", "#5F0", "#AF0","#FF0"],
+        ["#0A5", "#5A5", "#AA5","#FA5","#0F5", "#5F5", "#AF5","#FF5"],
+        ["#0AA", "#5AA", "#AAA","#FAA","#0FA", "#5FA", "#AFA","#FFA"],
+        ["#0AF", "#5AF", "#AAF","#FAF","#0FF", "#5FF", "#AFF","#FFF"]
+        
+    ]
+});
+$("#cmin0b").spectrum({
+    color: cMin0b,    
+    showPaletteOnly: true,
+    change: function(color) {
+        cMin0b=color;
+        redrawFlower();
+    },
+    hide: function(color) {
+        cMin0b=color;
+        redrawFlower();
+    },
+    palette: [
+        ["#000", "#500", "#A00","#F00","#050", "#550", "#A50","#F50"],
+        ["#005", "#505", "#A05","#F05","#055", "#555", "#A55","#F55"],
+        ["#00A", "#50A", "#A0A","#F0A","#05A", "#55A", "#A5A","#F5A"],
+        ["#00F", "#50F", "#A0F","#F0F","#05F", "#55F", "#A5F","#F5F"],
+        ["#0A0", "#5A0", "#AA0","#FA0","#0F0", "#5F0", "#AF0","#FF0"],
+        ["#0A5", "#5A5", "#AA5","#FA5","#0F5", "#5F5", "#AF5","#FF5"],
+        ["#0AA", "#5AA", "#AAA","#FAA","#0FA", "#5FA", "#AFA","#FFA"],
+        ["#0AF", "#5AF", "#AAF","#FAF","#0FF", "#5FF", "#AFF","#FFF"]
+        
+    ]
+});
+
+$("#chour").spectrum({
+    color: cHour,    
+    showPaletteOnly: true,
+    change: function(color) {
+        cHour=color;
+        redrawFlower();
+    },
+    hide: function(color) {
+        cHour=color;
+        redrawFlower();
+    },
+    palette: [
+        ["#000", "#500", "#A00","#F00","#050", "#550", "#A50","#F50"],
+        ["#005", "#505", "#A05","#F05","#055", "#555", "#A55","#F55"],
+        ["#00A", "#50A", "#A0A","#F0A","#05A", "#55A", "#A5A","#F5A"],
+        ["#00F", "#50F", "#A0F","#F0F","#05F", "#55F", "#A5F","#F5F"],
+        ["#0A0", "#5A0", "#AA0","#FA0","#0F0", "#5F0", "#AF0","#FF0"],
+        ["#0A5", "#5A5", "#AA5","#FA5","#0F5", "#5F5", "#AF5","#FF5"],
+        ["#0AA", "#5AA", "#AAA","#FAA","#0FA", "#5FA", "#AFA","#FFA"],
+        ["#0AF", "#5AF", "#AAF","#FAF","#0FF", "#5FF", "#AFF","#FFF"]
+        
+    ]
+});
+$("#chourb").spectrum({
+    color: cHourb,    
+    showPaletteOnly: true,
+    change: function(color) {
+        cHourb=color;
+        redrawFlower();
+    },
+    hide: function(color) {
+        cHourb=color;
+        redrawFlower();
+    },
+    palette: [
+        ["#000", "#500", "#A00","#F00","#050", "#550", "#A50","#F50"],
+        ["#005", "#505", "#A05","#F05","#055", "#555", "#A55","#F55"],
+        ["#00A", "#50A", "#A0A","#F0A","#05A", "#55A", "#A5A","#F5A"],
+        ["#00F", "#50F", "#A0F","#F0F","#05F", "#55F", "#A5F","#F5F"],
+        ["#0A0", "#5A0", "#AA0","#FA0","#0F0", "#5F0", "#AF0","#FF0"],
+        ["#0A5", "#5A5", "#AA5","#FA5","#0F5", "#5F5", "#AF5","#FF5"],
+        ["#0AA", "#5AA", "#AAA","#FAA","#0FA", "#5FA", "#AFA","#FFA"],
+        ["#0AF", "#5AF", "#AAF","#FAF","#0FF", "#5FF", "#AFF","#FFF"]
+        
+    ]
+});
+$("#chour0").spectrum({
+    color: cHour0,    
+    showPaletteOnly: true,
+    change: function(color) {
+        cHour0=color;
+        redrawFlower();
+    },
+    hide: function(color) {
+        cHour0=color;
+        redrawFlower();
+    },
+    palette: [
+        ["#000", "#500", "#A00","#F00","#050", "#550", "#A50","#F50"],
+        ["#005", "#505", "#A05","#F05","#055", "#555", "#A55","#F55"],
+        ["#00A", "#50A", "#A0A","#F0A","#05A", "#55A", "#A5A","#F5A"],
+        ["#00F", "#50F", "#A0F","#F0F","#05F", "#55F", "#A5F","#F5F"],
+        ["#0A0", "#5A0", "#AA0","#FA0","#0F0", "#5F0", "#AF0","#FF0"],
+        ["#0A5", "#5A5", "#AA5","#FA5","#0F5", "#5F5", "#AF5","#FF5"],
+        ["#0AA", "#5AA", "#AAA","#FAA","#0FA", "#5FA", "#AFA","#FFA"],
+        ["#0AF", "#5AF", "#AAF","#FAF","#0FF", "#5FF", "#AFF","#FFF"]
+        
+    ]
+});
+$("#chour0b").spectrum({
+    color: cHour0b,    
+    showPaletteOnly: true,
+    change: function(color) {
+        cHour0b=color;
+        redrawFlower();
+    },
+    hide: function(color) {
+        cHour0b=color;
+        redrawFlower();
+    },
+    palette: [
+        ["#000", "#500", "#A00","#F00","#050", "#550", "#A50","#F50"],
+        ["#005", "#505", "#A05","#F05","#055", "#555", "#A55","#F55"],
+        ["#00A", "#50A", "#A0A","#F0A","#05A", "#55A", "#A5A","#F5A"],
+        ["#00F", "#50F", "#A0F","#F0F","#05F", "#55F", "#A5F","#F5F"],
+        ["#0A0", "#5A0", "#AA0","#FA0","#0F0", "#5F0", "#AF0","#FF0"],
+        ["#0A5", "#5A5", "#AA5","#FA5","#0F5", "#5F5", "#AF5","#FF5"],
+        ["#0AA", "#5AA", "#AAA","#FAA","#0FA", "#5FA", "#AFA","#FFA"],
+        ["#0AF", "#5AF", "#AAF","#FAF","#0FF", "#5FF", "#AFF","#FFF"]
+        
+    ]
+});
+
+      var submitButton = document.getElementById("save_button");
+
+      submitButton.addEventListener("click", 
+        function() {
+          console.log("Submit");
+          var options = saveOptions();
+          
+
+          var return_to = decodeURIComponent(gup('return_to'));
+          if (return_to=="null") {return_to='pebblejs://close#'};
+          
+          var loc = return_to + encodeURIComponent(JSON.stringify(options));
+          //console.log(return_to);
+          //console.log(loc);
+          document.location = loc;
+        } , 
+      false);
+
+
+    redrawFlower();
+}
+
+
+</script> 
+
+<body bgcolor="#000" onload="init();">
+
+<canvas id="myCanvas" width="270" height="270" style="border:0px solid #d3d3d3;">
+Your browser does not support the HTML5 canvas tag.</canvas><p></p>
+
+<table align=center width=320>
+    <colgroup>
+        <col>
+    </colgroup>
+    <tr><td></td><td>minute</td><td>hour</td></tr>
+    <tr><td align=left>main</td><td><input type='text' id="cmin"/></td><td><input type='text' id="chour"/></td></tr>
+    <tr><td align=left>&#x2514; border</td><td><input type='text' id="cminb"/></td><td><input type='text' id="chourb"/></td></tr>
+    <tr><td align=left>hand</td><td><input type='text' id="cmin0"/></td><td><input type='text' id="chour0"/></td></tr>
+    <tr><td align=left>&#x2514; border</td><td><input type='text' id="cmin0b"/></td><td><input type='text' id="chour0b"/></td></tr>
+    <tr>
+        <td align=left>petals</td>
+        <td>
+        <select id="pmin" class=dropdown onchange="pMin=document.getElementById('pmin').value;redrawFlower();">
+<option value=6>6</option>
+<option value=7>7</option>
+<option value=8>8</option>
+<option value=9>9</option>
+<option value=10>10</option>
+<option value=11>11</option>
+<option value=12>12</option>
+<option value=13>13</option>
+<option value=14>14</option>
+<option value=15>15</option>
+<option value=16>16</option>
+<option value=17>17</option>
+<option value=18>18</option>
+<option value=19>19</option>
+<option value=20>20</option>
+<option value=21>21</option>
+<option value=22>22</option>
+<option value=23>23</option>
+<option value=24>24</option>
+    
+</select>
+        </td>
+        <td>
+        <select id="phour" class=dropdown onchange="pHour=document.getElementById('phour').value;redrawFlower();">
+<option value=3>3</option>
+<option value=4>4</option>
+<option value=5>5</option>
+<option value=6>6</option>
+<option value=7>7</option>
+<option value=8>8</option>
+<option value=9>9</option>
+<option value=10>10</option>
+<option value=11>11</option>
+<option value=12>12</option>
+</select>
+        </td>
+    </tr>
+</table>
+
+<p></p>
+<button id="save_button" class="myButton">Submit</button>
+
+<p></p>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="holcik@gmail.com">
+<input type="hidden" name="lc" value="CZ">
+<input type="hidden" name="item_name" value="TomHol">
+<input type="hidden" name="item_number" value="pebbleFLOWER">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+<img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
+</form>
+  
+
+
+
+</body>
+</html>

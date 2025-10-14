@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Analog Dot config</title>
+<script>
+    function gup( name )
+    {
+      name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
+      var regexS = "[\\?&]"+name+"=([^&#]*)";
+      var regex = new RegExp( regexS );
+      var results = regex.exec( window.location.href );
+      if( results == null )
+        return null;
+      else
+        return results[1];
+    }
+
+
+function saveOptions() {
+          var formular=document.getElementById("cfgform").elements;
+        var options = {
+          "c1": formular.namedItem("c1").checked,
+          "c2": formular.namedItem("c2").checked,
+          "c3": formular.namedItem("c3").checked,
+          "c4": formular.namedItem("c4").checked,
+          "c5": formular.namedItem("c5").checked
+        }
+        return options;
+      };
+
+
+
+ function vubecnic() {
+        var c1 = gup('c1' );
+        if (c1>"") {document.getElementById("cfgform").elements.namedItem("c1").checked=(c1=="true");}
+        var c2 = gup('c2' );
+        if (c2>"") {document.getElementById("cfgform").elements.namedItem("c2").checked=(c2=="true");}
+        var c3 = gup('c3' );
+        if (c3>"") {document.getElementById("cfgform").elements.namedItem("c3").checked=(c3=="true");}
+        var c4 = gup('c4' );
+        if (c4>"") {document.getElementById("cfgform").elements.namedItem("c4").checked=(c4=="true");}
+        var c5 = gup('c5' );
+        if (c5>"") {document.getElementById("cfgform").elements.namedItem("c5").checked=(c5=="true");}
+
+}
+</script>
+
+<style>
+    body {
+        font-family:arial;
+        font-size:16pt;
+        color:white;
+        background-color:#000;
+    }
+    #save_button {
+        width:80px;
+        height:30px;
+        margin:10px 0 0 0;
+        text-align:center;
+        padding-top:5px;
+        
+        background-color:#666;
+    }
+</style>    
+    
+</head>
+  <body onload="vubecnic()">
+     <form id="cfgform">
+
+    <p><b>Analog Dot options</b></p>
+    <label><input type="checkbox" name="c1" value="1">Dot for seconds</label></br>
+    <label><input type="checkbox" name="c2" value="1">Full dial + date</label></br>
+    <label><input type="checkbox" name="c3" value="1">Shake to display full dial</label></br>
+    <label><input type="checkbox" name="c4" value="1">Vibrate on Bluetooth change</label></br>
+    <label><input type="checkbox" name="c5" value="1">Invert the watchface</label></br>
+    <checkbox> </checkbox>
+    <div id="save_button">SAVE</div>
+    </form>
+    
+    <script>
+        
+      var submitButton = document.getElementById("save_button");
+
+      submitButton.addEventListener("click", 
+        function() {
+          console.log("Submit");
+          var options = saveOptions();
+          var return_to = decodeURIComponent(gup('return_to'));
+          if (return_to=="null") {return_to='pebblejs://close#'};
+          var loc = return_to + encodeURIComponent(JSON.stringify(options));
+          console.log(return_to);
+          console.log(loc);
+          document.location = loc;
+        } , 
+      false);
+
+    </script>
+    
+</body>
+</html>

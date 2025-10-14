@@ -1,0 +1,88 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Remain Configuration</title>
+  
+  <style>
+     @font-face{font-family:'PFD-Bold';src:url('//static.cloudpebble.net/fonts/PFDinDisplayPro-Bold.ttf') format('truetype');}
+     .font-bold{font-family:PFD-Bold,'Helvetica Neue',Helvetica,Arial,sans-serif;font-weight:bold;font-style:normal;}
+    body {
+        font-family:PFD-Bold,'Helvetica Neue',Helvetica,Arial,sans-serif;font-weight:bold;font-style:normal;
+    }    
+
+    </style>
+    <script>
+      //Setup to allow easy adding more options later
+      function saveOptions() {
+          var formular=document.getElementById("cfgform").elements;
+        var options = {
+          "hour": formular.namedItem("hour").value,
+        }
+        return options;
+      };
+    
+    function vubecnic() {
+        var hour = gup( 'hour' );
+        if (hour>"") {document.getElementById("cfgform").elements.namedItem("hour").value= hour;}
+    }
+    
+    function gup( name )
+    {
+      name = name.replace(/[\[]/,"\\\[").replace(/[\]]/,"\\\]");
+      var regexS = "[\\?&]"+name+"=([^&#]*)";
+      var regex = new RegExp( regexS );
+      var results = regex.exec( window.location.href );
+      if( results == null )
+        return null;
+      else
+        return results[1];
+    }
+    
+        function getQueryParam(variable, default_) {
+            var query = location.search.substring(1);
+            var vars = query.split('&');
+            for (var i = 0; i < vars.length; i++) {
+                var pair = vars[i].split('=');
+                if (pair[0] == variable)
+                    return decodeURIComponent(pair[1]);
+            }
+            return default_ || false;
+        }      
+
+    
+    </script>
+    </head>
+  <body onload="vubecnic()">
+
+     <form id=cfgform>
+    <h3 class=font-bold style="font-size:16pt">USEFUL DAY ENDS AT</h3>
+    <input type="time" name="hour">
+    </form>
+   
+    </p>
+
+    <p>
+    <button id="save_button" class=font-bold style="font-size:16pt">SAVE</button>
+    </p>
+
+      <script>
+      
+      //Setup to allow easy adding more options later
+
+      var submitButton = document.getElementById("save_button");
+      submitButton.addEventListener("click", 
+        function() {
+          console.log("Submit");
+
+          var options = saveOptions();
+             var return_to = getQueryParam('return_to', 'pebblejs://close#');
+          var location = return_to + encodeURIComponent(JSON.stringify(options));
+       
+          document.location = location;
+        }, 
+      false);
+    </script>
+
+      </body>
+</html>
