@@ -362,12 +362,12 @@ function saveConfiguration() {
     const final_config = {};
     Object.values(complication_types).forEach(type => {
         if (type.key) {
-            final_config[type.key] = type.isDouble ? -1 : 0;
+            final_config[type.key] = -1;
         }
     });
 
-    const slot_map = { L1: 1, L2: 2, L3: 3, L4: 4, R1: 5, R2: 6, R3: 7, R4: 8 };
-    const double_slot_map = { 1: 0, 3: 1, 5: 2, 7: 3 };
+    const slot_map = { L1: 4, L2: 5, L3: 6, L4: 7, R1: 0, R2: 1, R3: 2, R4: 3 };
+    const double_slot_map = { 0: 0, 2: 1, 4: 2, 6: 3 };
 
     slot_ids.forEach(slotId => {
         const select = document.getElementById('slot_' + slotId);
@@ -390,7 +390,7 @@ function saveConfiguration() {
     
     final_config[CONFIG.keys.INVERT] = document.getElementById('invert').checked;
     final_config[CONFIG.keys.VIBRATE] = document.getElementById('vibrate').checked;
-
+   console.log(final_config);
     document.location = 'pebblejs://close#' + encodeURIComponent(JSON.stringify(final_config));
 }
 
@@ -410,8 +410,8 @@ function loadConfiguration() {
     document.getElementById('vibrate').checked = config[CONFIG.keys.VIBRATE] ?? defaults.vibrate;
 
     if (config_string) {
-        const reverse_slot_map = { 1: 'L1', 2: 'L2', 3: 'L3', 4: 'L4', 5: 'R1', 6: 'R2', 7: 'R3', 8: 'R4' };
-        const reverse_double_slot_map = { 0: 'L1', 1: 'L3', 2: 'R1', 3: 'R3' };
+        const reverse_slot_map = { 4: 'L1', 5: 'L2', 6: 'L3', 7: 'L4', 0: 'R1', 1: 'R2', 2: 'R3', 3: 'R4' };
+        const reverse_double_slot_map = { 0: 'R1', 1: 'R3', 2: 'L1', 3: 'L3' };
         for (const type_name in complication_types) {
             const type_info = complication_types[type_name];
             if (!type_info.key) continue;
