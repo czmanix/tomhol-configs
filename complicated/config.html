@@ -15,7 +15,7 @@
         .slot-column { display: flex; flex-direction: column; gap: 10px; flex-basis: 100px; }
         select { background-color: #444; color: #fff; border: 1px solid #666; border-radius: 4px; padding: 8px; width: 100%; }
         select:disabled { background-color: #222; opacity: 0.5; }
-        #canvas-container { position: relative; width: 200px; height: 300px; }
+        #canvas-container { position: relative; width: 200px; height: 280px; }
         canvas { background-color: #000; border: 2px solid #555; }
         .button-container { text-align: center; margin-top: 20px; }
         button { background-color: #00aaff; color: #fff; border: none; padding: 12px 25px; border-radius: 5px; font-size: 1em; cursor: pointer; margin: 0 10px; }
@@ -40,7 +40,7 @@
         </div>
         <div id="canvas-container">
             <canvas id="previewCanvas" width="200" height="228"></canvas>
-	*Items are active and correctly aligned only on the watch
+	    *Items are active and align correctly on the watch
         </div>
         <div class="slot-column">
             <select id="slot_R1"></select>
@@ -65,8 +65,9 @@
             <div class="color-preview" id="side_bg_preview"></div>
         </div>
         <div class="config-item">
-		*Dark colors are on B/W watches as 50% dither
+	*Dark colors are displayed as 50% dither on B/W watches
         </div>
+
     </fieldset>
 
     <fieldset>
@@ -74,37 +75,38 @@
         <div class="config-item">
             <label for="timezone">Second Timezone</label>
             <select id="timezone">
-                 <option value="-12">UTC-12 (IDL)</option>
-                 <option value="-11">UTC-11 (Samoa)</option>
-                 <option value="-10">UTC-10 (Hawaii)</option>
-                 <option value="-9">UTC-9 (Alaska)</option>
-                 <option value="-8">UTC-8 (Pacific Time)</option>
-                 <option value="-7">UTC-7 (Mountain Time)</option>
-                 <option value="-6">UTC-6 (Central Time)</option>
-                 <option value="-5">UTC-5 (Eastern Time)</option>
-                 <option value="-4">UTC-4 (Atlantic Time)</option>
-                 <option value="-3">UTC-3 (Brazil, Greenland)</option>
-                 <option value="-2">UTC-2 (Mid-Atlantic)</option>
-                 <option value="-1">UTC-1 (Azores)</option>
-                 <option value="0">UTC/GMT (London)</option>
-                 <option value="1">UTC+1 (Berlin, Prague)</option>
-                 <option value="2">UTC+2 (Kyiv, Cairo)</option>
-                 <option value="3">UTC+3 (Moscow, Istanbul)</option>
-                 <option value="4">UTC+4 (Dubai)</option>
-                 <option value="5">UTC+5 (Karachi)</option>
-                 <option value="5.5">UTC+5:30 (India)</option>
-                 <option value="6">UTC+6 (Dhaka)</option>
-                 <option value="7">UTC+7 (Bangkok, Jakarta)</option>
-                 <option value="8">UTC+8 (Hong Kong, Perth)</option>
-                 <option value="9">UTC+9 (Tokyo, Seoul)</option>
-                 <option value="9.5">UTC+9:30 (Adelaide)</option>
-                 <option value="10">UTC+10 (Sydney, Guam)</option>
-                 <option value="11">UTC+11 (Solomon Is.)</option>
-                 <option value="12">UTC+12 (New Zealand)</option>
+                <option value="local">-- Same as Phone --</option>
+                <option value="Etc/GMT+12">UTC-12 (IDL)</option>
+                <option value="Pacific/Samoa">UTC-11 (Samoa)</option>
+                <option value="Pacific/Honolulu">UTC-10 (Hawaii)</option>
+                <option value="America/Anchorage">UTC-9 (Alaska)</option>
+                <option value="America/Los_Angeles">UTC-8 (Pacific Time)</option>
+                <option value="America/Denver">UTC-7 (Mountain Time)</option>
+                <option value="America/Chicago">UTC-6 (Central Time)</option>
+                <option value="America/New_York">UTC-5 (Eastern Time)</option>
+                <option value="America/Caracas">UTC-4 (Atlantic Time)</option>
+                <option value="America/Sao_Paulo">UTC-3 (Brazil)</option>
+                <option value="Etc/GMT+2">UTC-2 (Mid-Atlantic)</option>
+                <option value="Atlantic/Azores">UTC-1 (Azores)</option>
+                <option value="Europe/London">UTC+0 (London, GMT)</option>
+                <option value="Europe/Prague">UTC+1 (Prague, Berlin)</option>
+                <option value="Europe/Kyiv">UTC+2 (Kyiv, Cairo)</option>
+                <option value="Europe/Moscow">UTC+3 (Moscow, Istanbul)</option>
+                <option value="Asia/Dubai">UTC+4 (Dubai)</option>
+                <option value="Asia/Karachi">UTC+5 (Karachi)</option>
+                <option value="Asia/Kolkata">UTC+5:30 (India)</option>
+                <option value="Asia/Dhaka">UTC+6 (Dhaka)</option>
+                <option value="Asia/Bangkok">UTC+7 (Bangkok)</option>
+                <option value="Asia/Hong_Kong">UTC+8 (Hong Kong)</option>
+                <option value="Asia/Tokyo">UTC+9 (Tokyo)</option>
+                <option value="Australia/Adelaide">UTC+9:30 (Adelaide)</option>
+                <option value="Australia/Sydney">UTC+10 (Sydney)</option>
+                <option value="Pacific/Guadalcanal">UTC+11 (Solomon Is.)</option>
+                <option value="Pacific/Auckland">UTC+12 (New Zealand)</option>
             </select>
         </div>
          <div class="config-item">
-            <label for="invert">Invert Colors (only on B/W)</label>
+            <label for="invert">Invert Colors</label>
             <input type="checkbox" id="invert" style="width:20px; height:20px;">
         </div>
         <div class="config-item">
@@ -139,8 +141,8 @@ const CONFIG = {
         hours: 'hodiny.png', 
         minutes: 'minuty.png',
         day_double: 'miniblok.png',
-        seconds_double: 'seconds.png',
-        timezone_double: 'timezone.png',
+        seconds_double: 'miniblok.png',
+        timezone_double: 'miniblok.png',
         steps: 'kroky.png', hrm: 'tep.png', weather: 'pocasi.png', battery: 'baterie.png',
         bluetooth: 'bluetooth.png',
         ampm: 'ampm.png', dow: 'dayofweek.png', month: 'month.png',
@@ -160,7 +162,7 @@ const CONFIG = {
         slot_R4: 'empty',
         vibrate: true,
         invert: false,
-        timezone: 1 
+        timezone: 'Europe/Prague' // Výchozí IANA název
     },
 
     keys: {
@@ -209,6 +211,41 @@ window.onload = function() {
         updateAllSlots();
     });
 };
+
+// --- ZMĚNA: Nová funkce pro výpočet časového posunu
+function getOffsetInSeconds(targetTimezone) {
+    if (!targetTimezone || targetTimezone === 'local') {
+        return 0; // Žádný posun, pokud je vybrána lokální zóna telefonu
+    }
+    try {
+        const now = new Date();
+        const localOffset = now.getTimezoneOffset() * 60; // Lokální posun v sekundách oproti UTC
+        
+        // Získáme časový string v cílové zóně
+        const targetDateString = new Intl.DateTimeFormat('en-US', { timeZone: targetTimezone, timeZoneName: 'short' }).format(now);
+        // Získáme posun cílové zóny z tohoto stringu (např. "GMT-5")
+        const gmtMatch = targetDateString.match(/GMT([+-]\d+)/);
+        if (!gmtMatch) return 0; // Fallback
+        
+        const targetUTCOffset = parseInt(gmtMatch[1], 10) * 3600; // Cílový posun v sekundách oproti UTC
+
+        // Rozdíl oproti lokálnímu času telefonu
+        // Příklad: Telefon je UTC+2, cíl je UTC-5. Rozdíl je -7 hodin.
+        // localOffset = -7200, targetUTCOffset = -18000.
+        // Rozdíl = -18000 - (-7200) = -10800 sekund (-3 hodiny) - ŠPATNĚ
+        // Musíme jít přes UTC datum
+        const utcDate = new Date(now.toLocaleString('en-US', { timeZone: 'UTC' }));
+        const targetDate = new Date(now.toLocaleString('en-US', { timeZone: targetTimezone }));
+        const offset = (targetDate.getTime() - utcDate.getTime()) / 1000;
+        
+        return offset + localOffset;
+
+    } catch (e) {
+        console.error("Invalid timezone:", targetTimezone, e);
+        return 0; // V případě chyby vrátíme nulový posun
+    }
+}
+
 
 function preloadImages(callback) {
     let loaded = 0;
@@ -346,7 +383,11 @@ function saveConfiguration() {
     final_config[CONFIG.keys.HH_BG] = hexToInt(document.getElementById('hh_bg_preview').style.backgroundColor);
     final_config[CONFIG.keys.MM_BG] = hexToInt(document.getElementById('mm_bg_preview').style.backgroundColor);
     final_config[CONFIG.keys.SIDE_BG] = hexToInt(document.getElementById('side_bg_preview').style.backgroundColor);
-    final_config[CONFIG.keys.TIMEZONE] = parseFloat(document.getElementById('timezone').value);
+    
+    // ZMĚNA: Použití nové funkce pro výpočet posunu
+    const timezoneIdentifier = document.getElementById('timezone').value;
+    final_config[CONFIG.keys.TIMEZONE] = getOffsetInSeconds(timezoneIdentifier);
+    
     final_config[CONFIG.keys.INVERT] = document.getElementById('invert').checked;
     final_config[CONFIG.keys.VIBRATE] = document.getElementById('vibrate').checked;
 
@@ -363,7 +404,8 @@ function loadConfiguration() {
     document.getElementById('mm_bg_preview').style.backgroundColor = intToHex(config[CONFIG.keys.MM_BG] ?? hexToInt(defaults.mm_bg));
     document.getElementById('side_bg_preview').style.backgroundColor = intToHex(config[CONFIG.keys.SIDE_BG] ?? hexToInt(defaults.side_bg));
 
-    document.getElementById('timezone').value = config[CONFIG.keys.TIMEZONE] ?? defaults.timezone;
+    // Timezone se při načítání nenastavuje, viz vysvětlení v odpovědi
+    document.getElementById('timezone').value = 'local';
     document.getElementById('invert').checked = config[CONFIG.keys.INVERT] ?? defaults.invert;
     document.getElementById('vibrate').checked = config[CONFIG.keys.VIBRATE] ?? defaults.vibrate;
 
@@ -419,5 +461,4 @@ function hexToInt(c) {
 
 </script>
 </body>
-
 </html>
