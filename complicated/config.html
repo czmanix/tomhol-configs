@@ -427,7 +427,7 @@ function loadConfiguration() {
             const type_info = complication_types[type_name];
             if (!type_info.key) continue;
             const position = config[type_info.key];
-            if (position !== undefined && position !== 0 && position !== -1) {
+            if (position !== undefined && position !== -1) {
                 const slotId = type_info.isDouble ? reverse_double_slot_map[position] : reverse_slot_map[position];
                 if (slotId) document.getElementById('slot_' + slotId).value = type_name;
             }
