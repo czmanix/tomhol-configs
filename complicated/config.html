@@ -113,6 +113,14 @@
             <label for="vibrate">Vibrate on BT Change</label>
             <input type="checkbox" id="vibrate" style="width:20px; height:20px;">
         </div>
+        <div class="config-item">
+            <label for="degree_c">Temperature in C</label>
+            <input type="radio" id="degree_c" name="degree" value="C" style="width:20px; height:20px;">
+        </div>
+        <div class="config-item">
+            <label for="degree_f">Temperature in F</label>   
+            <input type="radio" id="degree_f" name="degree" value="F" style="width:20px; height:20px;">
+        </div>
     </fieldset>
 
     <div class="button-container">
@@ -162,11 +170,13 @@ const CONFIG = {
         slot_R4: 'empty',
         vibrate: true,
         invert: false,
+        degree_c: true,
+        degree_f: false,
         timezone: 'Europe/Prague' // Výchozí IANA název
     },
 
     keys: {
-        TIMEZONE: 5, INVERT: 11, VIBRATE: 13,
+        TIMEZONE: 5, INVERT: 11, VIBRATE: 13,DEGREE: 4,
         LOC_STEPS: 20, LOC_HRM: 21, LOC_WEATHER: 22, LOC_BATT: 23,
         LOC_BLUETOOTH: 24, LOC_AMPM: 25, LOC_DOW: 26, LOC_DAY: 27,
         LOC_MONTH: 28, LOC_SECONDS: 29, LOC_TIMEZONE: 30,
@@ -401,6 +411,8 @@ function saveConfiguration() {
     
     final_config[CONFIG.keys.INVERT] = document.getElementById('invert').checked;
     final_config[CONFIG.keys.VIBRATE] = document.getElementById('vibrate').checked;
+    final_config[CONFIG.keys.DEGREE] = document.getElementById('degree_f').checked;
+    
    console.log(final_config);
     document.location = 'pebblejs://close#' + encodeURIComponent(JSON.stringify(final_config));
 }
@@ -419,6 +431,8 @@ function loadConfiguration() {
     document.getElementById('timezone').value = 'local';
     document.getElementById('invert').checked = config[CONFIG.keys.INVERT] ?? defaults.invert;
     document.getElementById('vibrate').checked = config[CONFIG.keys.VIBRATE] ?? defaults.vibrate;
+    document.getElementById('degree_c').checked = (config[CONFIG.keys.DEGREE]==0) ?? defaults.degree_c;
+    document.getElementById('degree_f').checked = (config[CONFIG.keys.DEGREE]==1) ?? defaults.degree_f;
 
     if (config_string) {
         const reverse_slot_map = { 4: 'L1', 5: 'L2', 6: 'L3', 7: 'L4', 0: 'R1', 1: 'R2', 2: 'R3', 3: 'R4' };
