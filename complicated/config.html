@@ -214,35 +214,46 @@ window.onload = function() {
 
 // --- ZMĚNA: Nová funkce pro výpočet časového posunu
 function getOffsetInSeconds(targetTimezone) {
+    // Pro volbu "Same as Phone" vrátíme aktuální posun telefonu od UTC
     if (!targetTimezone || targetTimezone === 'local') {
-        return 0; // Žádný posun, pokud je vybrána lokální zóna telefonu
+        // getTimezoneOffset() vrací rozdíl v minutách mezi UTC a lokálním časem.
+        // Znaménko je obrácené (např. pro UTC+2 vrátí -120), proto násobíme -60.
+        return new Date().getTimezoneOffset() * -60;
     }
+    
     try {
         const now = new Date();
-        const localOffset = now.getTimezoneOffset() * 60; // Lokální posun v sekundách oproti UTC
+        // Moderní a spolehlivý způsob, jak zjistit GMT posun pro jakoukoliv zónu
+        const formatter = new Intl.DateTimeFormat('en-US', {
+            timeZone: targetTimezone,
+            timeZoneName: 'longOffset', // Požadujeme formát jako "GMT-9:00"
+        });
         
-        // Získáme časový string v cílové zóně
-        const targetDateString = new Intl.DateTimeFormat('en-US', { timeZone: targetTimezone, timeZoneName: 'short' }).format(now);
-        // Získáme posun cílové zóny z tohoto stringu (např. "GMT-5")
-        const gmtMatch = targetDateString.match(/GMT([+-]\d+)/);
-        if (!gmtMatch) return 0; // Fallback
-        
-        const targetUTCOffset = parseInt(gmtMatch[1], 10) * 3600; // Cílový posun v sekundách oproti UTC
+        // Získáme jednotlivé části formátovaného data
+        const parts = formatter.formatToParts(now);
+        // Najdeme část, která obsahuje název zóny (náš požadovaný posun)
+        const offsetPart = parts.find(part => part.type === 'timeZoneName');
+        const offsetString = offsetPart.value; // Např. "GMT-9:00"
 
-        // Rozdíl oproti lokálnímu času telefonu
-        // Příklad: Telefon je UTC+2, cíl je UTC-5. Rozdíl je -7 hodin.
-        // localOffset = -7200, targetUTCOffset = -18000.
-        // Rozdíl = -18000 - (-7200) = -10800 sekund (-3 hodiny) - ŠPATNĚ
-        // Musíme jít přes UTC datum
-        const utcDate = new Date(now.toLocaleString('en-US', { timeZone: 'UTC' }));
-        const targetDate = new Date(now.toLocaleString('en-US', { timeZone: targetTimezone }));
-        const offset = (targetDate.getTime() - utcDate.getTime()) / 1000;
-        
-        return offset + localOffset;
+        // Regulárním výrazem získáme znaménko, hodiny a minuty
+        const match = offsetString.match(/GMT([+-])(\d{1,2}):(\d{2})/);
+        if (!match) {
+            // Fallback pro zóny, které vrací jen "GMT" (UTC+0)
+            if (offsetString === 'GMT') return 0;
+            console.error("Could not parse offset string:", offsetString);
+            return 0;
+        }
+
+        const sign = match[1] === '-' ? -1 : 1;
+        const hours = parseInt(match[2], 10);
+        const minutes = parseInt(match[3], 10);
+
+        const offsetInSeconds = sign * (hours * 3600 + minutes * 60);
+        return offsetInSeconds;
 
     } catch (e) {
         console.error("Invalid timezone:", targetTimezone, e);
-        return 0; // V případě chyby vrátíme nulový posun
+        return 0;
     }
 }
 
