@@ -419,20 +419,22 @@ function saveConfiguration() {
 
 function loadConfiguration() {
     const config_string = location.hash.substring(1);
-    
+    stupne = 0;
     const config = config_string ? JSON.parse(decodeURIComponent(config_string)) : {};
     const defaults = CONFIG.defaults;
 
     document.getElementById('hh_bg_preview').style.backgroundColor = intToHex(config[CONFIG.keys.HH_BG] ?? hexToInt(defaults.hh_bg));
     document.getElementById('mm_bg_preview').style.backgroundColor = intToHex(config[CONFIG.keys.MM_BG] ?? hexToInt(defaults.mm_bg));
     document.getElementById('side_bg_preview').style.backgroundColor = intToHex(config[CONFIG.keys.SIDE_BG] ?? hexToInt(defaults.side_bg));
+    
+    if (config[CONFIG.keys.DEGREE]>0) {stupne=1;} else {stupne=0}
 
     // Timezone se při načítání nenastavuje, viz vysvětlení v odpovědi
     document.getElementById('timezone').value = 'local';
     document.getElementById('invert').checked = config[CONFIG.keys.INVERT] ?? defaults.invert;
     document.getElementById('vibrate').checked = config[CONFIG.keys.VIBRATE] ?? defaults.vibrate;
-    document.getElementById('degree_c').checked = (config[CONFIG.keys.DEGREE]==0) ?? defaults.degree_c;
-    document.getElementById('degree_f').checked = (config[CONFIG.keys.DEGREE]==1) ?? defaults.degree_f;
+    document.getElementById('degree_c').checked = (stupne==0);
+    document.getElementById('degree_f').checked = (stupne==1);
 
     if (config_string) {
         const reverse_slot_map = { 4: 'L1', 5: 'L2', 6: 'L3', 7: 'L4', 0: 'R1', 1: 'R2', 2: 'R3', 3: 'R4' };
