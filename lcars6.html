@@ -115,42 +115,40 @@ input[type="radio"]:checked + label span {
           var formular=document.getElementById("cfgform").elements;
         var options = {
           "temp": formular.namedItem("temp").value,
-          "steps": onoff(formular.namedItem("steps").checked),
+          //"steps": onoff(formular.namedItem("steps").checked),
           "invert": onoff(formular.namedItem("invert").checked),
           "vibrate": onoff(formular.namedItem("vibrate").checked),
           "date": formular.namedItem("date").value,
+          //"loc" :onoff(formular.namedItem("loc").checked),
+          //"fcastapi" :formular.namedItem("fcastapi").value
           "seconds": onoff(formular.namedItem("seconds").checked),
-          "loc" :onoff(formular.namedItem("loc").checked),
-          "fcastapi" :formular.namedItem("fcastapi").value
         }
         return options;
       };
     
     function vubecnic() {
         var invert = gup('invert');
-        var steps = gup('steps');
+        //var steps = gup('steps');
         var temp   = gup('temp');
         var vibrate= gup('vibrate');
         var seconds= gup('seconds');
         var datefmt= gup('date');
-        var loc= gup('loc');
-        var apikey= gup('fcastapi');
+        //var loc= gup('loc');
+        //var apikey= gup('fcastapi');
 
         var platform= gup('platform');
         
         if (invert>"") {document.getElementById("cfgform").elements.namedItem("invert").checked= (invert=="on");}
-        if (steps>"") {document.getElementById("cfgform").elements.namedItem("steps").checked= (steps=="on");}
+        // if (steps>"") {document.getElementById("cfgform").elements.namedItem("steps").checked= (steps=="on");}
         if (temp>"") {document.getElementById("cfgform").elements.namedItem("temp").value= temp;}   
         if (vibrate>"") {document.getElementById("cfgform").elements.namedItem("vibrate").checked= (vibrate=="on");}   
         if (seconds>"") {document.getElementById("cfgform").elements.namedItem("seconds").checked= (seconds=="on");}   
         if (datefmt>"") {document.getElementById("cfgform").elements.namedItem("date").value= datefmt;}
-        if (loc>"") {document.getElementById("cfgform").elements.namedItem("loc").checked= (loc=="on");}
-        if (apikey>"") {document.getElementById("cfgform").elements.namedItem("fcastapi").value= apikey;}
+        // if (loc>"") {document.getElementById("cfgform").elements.namedItem("loc").checked= (loc=="on");}
+        // if (apikey>"") {document.getElementById("cfgform").elements.namedItem("fcastapi").value= apikey;}
         
-        if ((platform=="basalt")||(platform=="chalk")) {document.getElementById("invblock").style.display="none";}
-        if ((platform=="chalk")) {
-            document.getElementById("d0").style.display="none";
-            }
+        if ((platform=="basalt")||(platform=="emery")) {document.getElementById("invblock").style.display="none";}
+        
     }
     
 
@@ -188,15 +186,17 @@ input[type="radio"]:checked + label span {
     <h2>LIFE SUPPORT</br>
     <input type="radio" id="t1" name="temp" value="C" checked="checked"><label for="t1"><span></span> CELSIUS</br></label>
     <input type="radio" id="t2" name="temp" value="F"><label for="t2"><span></span> FAHRENHEIT</br></label>
+    <!-- 
     <input type="checkbox" id="steps" name="steps" value="on"><label for="steps"><span></span> SHOW PEBBLE HEALTH</label></br>
     <label for="fcastapi"><a style="color:white" href="https://developer.forecast.io/" target="_new">FORECAST.IO</a> API KEY (LEAVE BLANK FOR OPENWEATHER)</label></br>
+    -->  
     <input type="text" id="fcastapi" size=30  name="fcastapi"></br>     
     </br><div id="invblock">
-    <input type="checkbox" id="invert" name="invert" value="on"><label for="invert"><span></span> INVERT THE DISPLAY</label>
+    <input type="checkbox" id="invert" name="invert" value="on"><label for="invert"><span></span> INVERT THE DISPLAY ON B/W</label>
     </div>
     <input type="checkbox" id="vibrate" name="vibrate" value="on" checked="checked"><label for="vibrate"><span></span> VIBRATE ON DISCONNECT</label></br>
     <input type="checkbox" id="seconds" name="seconds" value="on"><label for="seconds"><span></span> SHOW SECONDS</label></br><span id="d0">
-    <input type="checkbox" id="loc" name="loc" value="on"><label for="loc"><span></span> SHOW LOCATION NAME (OPENWEATHER)</label></br>
+    <!-- <input type="checkbox" id="loc" name="loc" value="on"><label for="loc"><span></span> SHOW LOCATION NAME (OPENWEATHER)</label></br> -->
         
     </br>DATE FORMAT</br>
     <input type="radio" id="d1" name="date" value="dmY" checked="checked"><label for="d1"><span></span> DDMMYYYY</br></label>
