@@ -9,7 +9,7 @@
         fieldset { border: 1px solid #555; border-radius: 8px; margin-bottom: 20px; padding: 15px; width: 100%; max-width: 450px; box-sizing: border-box; }
         legend { font-size: 1.2em; font-weight: bold; color: #00aaff; padding: 0 10px; }
         .config-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .config-item label { flex-basis: 50%; }
+        .config-item label { flex-basis: 80%; }
         .color-preview { width: 45%; height: 40px; border: 2px solid #666; border-radius: 4px; cursor: pointer; }
         #main-container { display: flex; justify-content: center; align-items: flex-start; width: 100%; max-width: 450px; gap: 15px; }
         .slot-column { display: flex; flex-direction: column; gap: 10px; flex-basis: 100px; }
@@ -33,7 +33,11 @@
 
     <div id="main-container">
         
-        <div class="slot-column" style="vertical-align: bottom;">
+        <div class="slot-column" >
+             <div class="config-item">
+            <label for="hourleft">Hours on the left</label>
+            <input type="checkbox" id="hourleft" style="width:20px; height:20px;">
+        </div>
             <select id="slot_L1"></select>
             <select id="slot_L2"></select>
             <select id="slot_L3"></select>
@@ -48,6 +52,11 @@
             <select id="slot_R2"></select>
             <select id="slot_R3"></select>
             <select id="slot_R4"></select>
+
+              <div class="config-item">
+            <label for="minuteleft">Minutes on the left</label>
+            <input type="checkbox" id="minuteleft" style="width:20px; height:20px;">
+        </div>
         </div>
 
     </div>
@@ -76,14 +85,8 @@
         <legend>⚙️ General Settings</legend>
 
 
-        <div class="config-item">
-            <label for="hourleft">Hours on the left</label>
-            <input type="checkbox" id="hourleft" style="width:20px; height:20px;">
-        </div>
-        <div class="config-item">
-            <label for="minuteleft">Minutes on the left</label>
-            <input type="checkbox" id="minuteleft" style="width:20px; height:20px;">
-        </div>
+       
+      
 
         <div class="config-item">
             <label for="timezone">Second Timezone</label>
