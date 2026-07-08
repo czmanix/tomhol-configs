@@ -32,7 +32,8 @@
     <h1>BlockFace Settings</h1>
 
     <div id="main-container">
-        <div class="slot-column">
+        
+        <div class="slot-column" style="vertical-align: bottom;">
             <select id="slot_L1"></select>
             <select id="slot_L2"></select>
             <select id="slot_L3"></select>
@@ -48,6 +49,7 @@
             <select id="slot_R3"></select>
             <select id="slot_R4"></select>
         </div>
+
     </div>
 
     <fieldset>
@@ -72,6 +74,17 @@
 
     <fieldset>
         <legend>⚙️ General Settings</legend>
+
+
+        <div class="config-item">
+            <label for="hourleft">Hours on the left</label>
+            <input type="checkbox" id="hourleft" style="width:20px; height:20px;">
+        </div>
+        <div class="config-item">
+            <label for="minuteleft">Minutes on the left</label>
+            <input type="checkbox" id="minuteleft" style="width:20px; height:20px;">
+        </div>
+
         <div class="config-item">
             <label for="timezone">Second Timezone</label>
             <select id="timezone">
@@ -105,6 +118,9 @@
                 <option value="Pacific/Auckland">UTC+12 (New Zealand)</option>
             </select>
         </div>
+        
+        
+
          <div class="config-item">
             <label for="invert">Invert Colors on B/W</label>
             <input type="checkbox" id="invert" style="width:20px; height:20px;">
@@ -173,6 +189,8 @@ const CONFIG = {
         invert: false,
         degree_c: true,
         degree_f: false,
+        hourleft:true,
+        minuteleft:false,
         timezone: 'Europe/Prague' // Výchozí IANA název
     },
 
@@ -182,7 +200,7 @@ const CONFIG = {
         LOC_BLUETOOTH: 24, LOC_AMPM: 25, LOC_DOW: 26, LOC_DAY: 27,
         LOC_MONTH: 28, LOC_SECONDS: 29, LOC_TIMEZONE: 30,
         HH_BG: 31, MM_BG: 32, SIDE_BG: 34, LOC_NUMMONTH: 35,// ZMĚNA: Nový klíč pouze pro potřeby HTML konfigurace
-        LOC_DDMM: 41, LOC_MMDD: 42, LOC_YEAR: 43,
+        LOC_DDMM: 41, LOC_MMDD: 42, LOC_YEAR: 43, HOURLEFT: 44,MINUTELEFT: 45,
         TIMEZONE_NAME: 100
     }
 };
@@ -356,25 +374,33 @@ function createTintedImage(image, color) {
 function redrawCanvas() {
     const canvas = document.getElementById('previewCanvas');
     const ctx = canvas.getContext('2d');
+    
     ctx.fillStyle = 'black';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    if (document.getElementById('hourleft').checked) {h_shift=0;} else {h_shift=66;}
+    if (document.getElementById('minuteleft').checked) {m_shift=-66;} else {m_shift=0;}
 
     const hours_color = document.getElementById('hh_bg_preview').style.backgroundColor;
     const minutes_color = document.getElementById('mm_bg_preview').style.backgroundColor;
     const side_color = document.getElementById('side_bg_preview').style.backgroundColor;
 
     const tintedHours = createTintedImage(preloaded_images.hours, hours_color);
-    if (tintedHours) ctx.drawImage(tintedHours, 0, 0);
+    if (tintedHours) ctx.drawImage(tintedHours, h_shift, 0);
 
     const tintedMinutes = createTintedImage(preloaded_images.minutes, minutes_color);
-    if (tintedMinutes) ctx.drawImage(tintedMinutes, 0, 0);
+    if (tintedMinutes) ctx.drawImage(tintedMinutes, m_shift, 0);
     
     slot_ids.forEach((slotId) => {
         const selected_type_name = document.getElementById('slot_' + slotId).value;
         if (selected_type_name !== 'empty') {
             const type_info = complication_types[selected_type_name];
             const image = preloaded_images[selected_type_name];
-            const coords = CONFIG.coordinates[slotId];
+            coords = CONFIG.coordinates[slotId];
+            if ((coords.y<100) && !document.getElementById('hourleft').checked) {coords.x=6}
+            if ((coords.y<100) && document.getElementById('hourleft').checked) {coords.x=138}
+            if ((coords.y>100) && document.getElementById('minuteleft').checked) {coords.x=138}
+            if ((coords.y>100) && !document.getElementById('minuteleft').checked) {coords.x=6}
             if (image?.complete && image.naturalHeight !== 0 && coords) {
                 if (type_info.isTinted) {
                     const tintedComplication = createTintedImage(image, side_color);
@@ -422,6 +448,8 @@ function saveConfiguration() {
     final_config[CONFIG.keys.INVERT] = document.getElementById('invert').checked;
     final_config[CONFIG.keys.VIBRATE] = document.getElementById('vibrate').checked;
     final_config[CONFIG.keys.DEGREE] = document.getElementById('degree_f').checked;
+    final_config[CONFIG.keys.HOURLEFT] = document.getElementById('hourleft').checked;
+    final_config[CONFIG.keys.MINUTELEFT] = document.getElementById('minuteleft').checked;
     
    console.log(final_config);
     document.location = 'pebblejs://close#' + encodeURIComponent(JSON.stringify(final_config));
@@ -440,6 +468,9 @@ function loadConfiguration() {
     document.getElementById('timezone').value = config[CONFIG.keys.TIMEZONE_NAME] ?? defaults.timezone;
 
     if (config[CONFIG.keys.DEGREE]>0) {stupne=1;} else {stupne=0}
+
+    document.getElementById('hourleft').checked = config[CONFIG.keys.HOURLEFT] ?? defaults.hourleft;
+    document.getElementById('minuteleft').checked = config[CONFIG.keys.MINUTELEFT] ?? defaults.minuteleft;
 
     // Timezone se při načítání nenastavuje, viz vysvětlení v odpovědi
     document.getElementById('invert').checked = config[CONFIG.keys.INVERT] ?? defaults.invert;
