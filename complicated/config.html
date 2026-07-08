@@ -152,6 +152,7 @@ const CONFIG = {
         timezone_double: 'timezone.png',
         nummonth_double: 'timezone.png',
         steps: 'kroky.png', hrm: 'tep.png', weather: 'pocasi.png', battery: 'baterie.png',
+        ddmm: 'ddmm.png', mmdd: 'mmdd.png',year : 'year.png',
         bluetooth: 'bluetooth.png',
         ampm: 'ampm.png', dow: 'dayofweek.png', month: 'month.png',
     },
@@ -181,6 +182,7 @@ const CONFIG = {
         LOC_BLUETOOTH: 24, LOC_AMPM: 25, LOC_DOW: 26, LOC_DAY: 27,
         LOC_MONTH: 28, LOC_SECONDS: 29, LOC_TIMEZONE: 30,
         HH_BG: 31, MM_BG: 32, SIDE_BG: 34, LOC_NUMMONTH: 35,// ZMĚNA: Nový klíč pouze pro potřeby HTML konfigurace
+        LOC_DDMM: 41, LOC_MMDD: 42, LOC_YEAR: 43,
         TIMEZONE_NAME: 100
     }
 };
@@ -202,6 +204,10 @@ const complication_types = {
     ampm: { name: 'AM/PM', key: CONFIG.keys.LOC_AMPM, isDouble: false, isTinted: false },
     dow: { name: 'Day of Week', key: CONFIG.keys.LOC_DOW, isDouble: false, isTinted: false },
     month: { name: 'Month', key: CONFIG.keys.LOC_MONTH, isDouble: false, isTinted: false },
+    ddmm: { name: 'DDMM date', key: CONFIG.keys.LOC_DDMM, isDouble: false, isTinted: false },
+    mmdd: { name: 'MMDD date', key: CONFIG.keys.LOC_MMDD, isDouble: false, isTinted: false },
+    year: { name: 'Year', key: CONFIG.keys.LOC_YEAR, isDouble: false, isTinted: false },
+    
     day_double: { name: 'Day number', key: CONFIG.keys.LOC_DAY, isDouble: true, isTinted: true },
     seconds_double: { name: 'Seconds', key: CONFIG.keys.LOC_SECONDS, isDouble: true, isTinted: true },
     nummonth_double: { name: 'Month number', key: CONFIG.keys.LOC_NUMMONTH, isDouble: true, isTinted: true },
