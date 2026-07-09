@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Watchface Configuration</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #000; color: #fff; margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
+        fieldset { border: 1px solid #555; border-radius: 8px; margin-bottom: 20px; padding: 15px; width: 100%; max-width: 450px; box-sizing: border-box; }
+        legend { font-size: 1.2em; font-weight: bold; color: #00aaff; padding: 0 10px; }
+        .config-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .config-item label { flex-basis: 80%; }
+        .color-preview { width: 45%; height: 40px; border: 2px solid #666; border-radius: 4px; cursor: pointer; }
+        #main-container { display: flex; justify-content: center; align-items: flex-start; width: 100%; max-width: 450px; gap: 15px; }
+        .slot-column { display: flex; flex-direction: column; gap: 10px; flex-basis: 100px; }
+        select { background-color: #444; color: #fff; border: 1px solid #666; border-radius: 4px; padding: 8px; width: 100%; }
+        select:disabled { background-color: #222; opacity: 0.5; }
+        #canvas-container { position: relative; width: 200px; height: 280px; }
+        canvas { background-color: #000; border: 2px solid #555; }
+        .button-container { text-align: center; margin-top: 20px; }
+        button { background-color: #00aaff; color: #fff; border: none; padding: 12px 25px; border-radius: 5px; font-size: 1em; cursor: pointer; margin: 0 10px; }
+        button#cancel { background-color: #555; }
+
+        .palette-modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); justify-content: center; align-items: center; }
+        .palette-content { background-color: #222; padding: 20px; border: 1px solid #888; border-radius: 8px; max-width: 300px; }
+        .palette-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 5px; }
+        .palette-swatch { width: 30px; height: 30px; border-radius: 3px; cursor: pointer; border: 1px solid #555; }
+    </style>
+</head>
+<body>
+
+    <h1>BlockFace Settings</h1>
+
+    <div id="main-container">
+        
+        <div class="slot-column" >
+             <div class="config-item">
+            <label for="hourleft">Hours on the left</label>
+            <input type="checkbox" id="hourleft" style="width:20px; height:20px;">
+        </div>
+            <select id="slot_L1"></select>
+            <select id="slot_L2"></select>
+            <select id="slot_L3"></select>
+            <select id="slot_L4"></select>
+        </div>
+        <div id="canvas-container">
+            <canvas id="previewCanvas" width="200" height="228"></canvas>
+	    *Items are active and align correctly on the watch
+        </div>
+        <div class="slot-column">
+            <select id="slot_R1"></select>
+            <select id="slot_R2"></select>
+            <select id="slot_R3"></select>
+            <select id="slot_R4"></select>
+
+              <div class="config-item">
+            <label for="minuteleft">Minutes on the left</label>
+            <input type="checkbox" id="minuteleft" style="width:20px; height:20px;">
+        </div>
+        </div>
+
+    </div>
+
+    <fieldset>
+        <legend>🎨 Colors</legend>
+        <div class="config-item">
+            <label for="hh_bg">Hours Color</label>
+            <div class="color-preview" id="hh_bg_preview"></div>
+        </div>
+        <div class="config-item">
+            <label for="mm_bg">Minutes Color</label>
+            <div class="color-preview" id="mm_bg_preview"></div>
+        </div>
+        <div class="config-item">
+            <label for="side_bg">Side Color</label>
+            <div class="color-preview" id="side_bg_preview"></div>
+        </div>
+        <div class="config-item">
+	*Dark colors are displayed as 50% dither on B/W watches
+        </div>
+
+    </fieldset>
+
+    <fieldset>
+        <legend>⚙️ General Settings</legend>
+
+
+       
+      
+
+        <div class="config-item">
+            <label for="timezone">Second Timezone</label>
+            <select id="timezone">
+                <option value="local">-- Same as Phone --</option>
+                <option value="Etc/GMT+12">UTC-12 (IDL)</option>
+                <option value="Pacific/Samoa">UTC-11 (Samoa)</option>
+                <option value="Pacific/Honolulu">UTC-10 (Hawaii)</option>
+                <option value="America/Anchorage">UTC-9 (Alaska)</option>
+                <option value="America/Los_Angeles">UTC-8 (Pacific Time)</option>
+                <option value="America/Denver">UTC-7 (Mountain Time)</option>
+                <option value="America/Chicago">UTC-6 (Central Time)</option>
+                <option value="America/New_York">UTC-5 (Eastern Time)</option>
+                <option value="America/Caracas">UTC-4 (Atlantic Time)</option>
+                <option value="America/Sao_Paulo">UTC-3 (Brazil)</option>
+                <option value="Etc/GMT+2">UTC-2 (Mid-Atlantic)</option>
+                <option value="Atlantic/Azores">UTC-1 (Azores)</option>
+                <option value="Europe/London">UTC+0 (London, GMT)</option>
+                <option value="Europe/Prague">UTC+1 (Prague, Berlin)</option>
+                <option value="Europe/Kyiv">UTC+2 (Kyiv, Cairo)</option>
+                <option value="Europe/Moscow">UTC+3 (Moscow, Istanbul)</option>
+                <option value="Asia/Dubai">UTC+4 (Dubai)</option>
+                <option value="Asia/Karachi">UTC+5 (Karachi)</option>
+                <option value="Asia/Kolkata">UTC+5:30 (India)</option>
+                <option value="Asia/Dhaka">UTC+6 (Dhaka)</option>
+                <option value="Asia/Bangkok">UTC+7 (Bangkok)</option>
+                <option value="Asia/Hong_Kong">UTC+8 (Hong Kong)</option>
+                <option value="Asia/Tokyo">UTC+9 (Tokyo)</option>
+                <option value="Australia/Adelaide">UTC+9:30 (Adelaide)</option>
+                <option value="Australia/Sydney">UTC+10 (Sydney)</option>
+                <option value="Pacific/Guadalcanal">UTC+11 (Solomon Is.)</option>
+                <option value="Pacific/Auckland">UTC+12 (New Zealand)</option>
+            </select>
+        </div>
+        
+        
+
+         <div class="config-item">
+            <label for="invert">Invert Colors on B/W</label>
+            <input type="checkbox" id="invert" style="width:20px; height:20px;">
+        </div>
+        <div class="config-item">
+            <label for="vibrate">Vibrate on BT Change</label>
+            <input type="checkbox" id="vibrate" style="width:20px; height:20px;">
+        </div>
+        <div class="config-item">
+            <label for="degree_c">Temperature in C</label>
+            <input type="radio" id="degree_c" name="degree" value="C" style="width:20px; height:20px;">
+        </div>
+        <div class="config-item">
+            <label for="degree_f">Temperature in F</label>   
+            <input type="radio" id="degree_f" name="degree" value="F" style="width:20px; height:20px;">
+        </div>
+    </fieldset>
+
+    <div class="button-container">
+        <button id="save">Save</button>
+    </div>
+    
+    <div id="paletteModal" class="palette-modal">
+        <div class="palette-content">
+            <div id="paletteGrid" class="palette-grid"></div>
+        </div>
+    </div>
+
+<script>
+// =================================================================================
+// ===== USER CONFIGURATION ========================================================
+// =================================================================================
+
+const CONFIG = {
+    coordinates: {
+        L1: { x: 6, y: 119 }, L2: { x: 6, y: 142 }, L3: { x: 6, y: 164 }, L4: { x: 6, y: 188 },
+        R1: { x: 138, y: 19 }, R2: { x: 138, y: 43 }, R3: { x: 138, y: 67 }, R4: { x: 138, y: 89 }
+    },
+    
+    image_sources: {
+        hours: 'hodiny.png', 
+        minutes: 'minuty.png',
+        day_double: 'miniblok.png',
+        seconds_double: 'seconds.png',
+        timezone_double: 'timezone.png',
+        nummonth_double: 'timezone.png',
+        steps: 'kroky.png', hrm: 'tep.png', weather: 'pocasi.png', battery: 'baterie.png',
+        ddmm: 'ddmm.png', mmdd: 'mmdd.png',year : 'year.png',
+        bluetooth: 'bluetooth.png',
+        ampm: 'ampm.png', dow: 'dayofweek.png', month: 'month.png',
+    },
+    
+    defaults: {
+        hh_bg: '#55FFFF',
+        mm_bg: '#55FFFF',
+        side_bg: '#AAAAAA',
+        slot_L1: 'steps',
+        slot_L2: 'hrm',
+        slot_L3: 'weather',
+        slot_L4: 'battery',
+        slot_R1: 'ampm',
+        slot_R2: 'dow',
+        slot_R3: 'day_double',
+        slot_R4: 'empty',
+        vibrate: true,
+        invert: false,
+        degree_c: true,
+        degree_f: false,
+        hourleft:true,
+        minuteleft:false,
+        timezone: 'Europe/Prague' // Výchozí IANA název
+    },
+
+    keys: {
+        TIMEZONE: 5, INVERT: 11, VIBRATE: 13,DEGREE: 4,
+        LOC_STEPS: 20, LOC_HRM: 21, LOC_WEATHER: 22, LOC_BATT: 23,
+        LOC_BLUETOOTH: 24, LOC_AMPM: 25, LOC_DOW: 26, LOC_DAY: 27,
+        LOC_MONTH: 28, LOC_SECONDS: 29, LOC_TIMEZONE: 30,
+        HH_BG: 31, MM_BG: 32, SIDE_BG: 34, LOC_NUMMONTH: 35,// ZMĚNA: Nový klíč pouze pro potřeby HTML konfigurace
+        LOC_DDMM: 41, LOC_MMDD: 42, LOC_YEAR: 43, HOURLEFT: 44,MINUTELEFT: 45,
+        TIMEZONE_NAME: 100
+    }
+};
+
+// =================================================================================
+// ===== END OF CONFIGURATION ======================================================
+// =================================================================================
+
+const preloaded_images = {};
+let activeColorInputId = null;
+const slot_ids = ['L1', 'L2', 'L3', 'L4', 'R1', 'R2', 'R3', 'R4'];
+const complication_types = {
+    empty: { name: '(Empty)', isDouble: false, isTinted: false },
+    steps: { name: 'Steps', key: CONFIG.keys.LOC_STEPS, isDouble: false, isTinted: false },
+    hrm: { name: 'Heart Rate', key: CONFIG.keys.LOC_HRM, isDouble: false, isTinted: false },
+    weather: { name: 'Weather', key: CONFIG.keys.LOC_WEATHER, isDouble: false, isTinted: false },
+    battery: { name: 'Battery', key: CONFIG.keys.LOC_BATT, isDouble: false, isTinted: false },
+    bluetooth: { name: 'Bluetooth', key: CONFIG.keys.LOC_BLUETOOTH, isDouble: false, isTinted: false },
+    ampm: { name: 'AM/PM', key: CONFIG.keys.LOC_AMPM, isDouble: false, isTinted: false },
+    dow: { name: 'Day of Week', key: CONFIG.keys.LOC_DOW, isDouble: false, isTinted: false },
+    month: { name: 'Month', key: CONFIG.keys.LOC_MONTH, isDouble: false, isTinted: false },
+    ddmm: { name: 'DDMM date', key: CONFIG.keys.LOC_DDMM, isDouble: false, isTinted: false },
+    mmdd: { name: 'MMDD date', key: CONFIG.keys.LOC_MMDD, isDouble: false, isTinted: false },
+    year: { name: 'Year', key: CONFIG.keys.LOC_YEAR, isDouble: false, isTinted: false },
+    
+    day_double: { name: 'Day number', key: CONFIG.keys.LOC_DAY, isDouble: true, isTinted: true },
+    seconds_double: { name: 'Seconds', key: CONFIG.keys.LOC_SECONDS, isDouble: true, isTinted: true },
+    nummonth_double: { name: 'Month number', key: CONFIG.keys.LOC_NUMMONTH, isDouble: true, isTinted: true },
+    timezone_double: { name: 'Timezone', key: CONFIG.keys.LOC_TIMEZONE, isDouble: true, isTinted: true },
+    
+};
+
+const offscreenCanvas = document.createElement('canvas');
+offscreenCanvas.width = 200;
+offscreenCanvas.height = 228;
+const offscreenCtx = offscreenCanvas.getContext('2d');
+
+
+window.onload = function() {
+    preloadImages(() => {
+        populateDropdowns();
+        setupEventListeners();
+        generatePebblePalette();
+        loadConfiguration();
+        updateAllSlots();
+    });
+};
+
+// --- ZMĚNA: Nová funkce pro výpočet časového posunu
+function getOffsetInSeconds(targetTimezone) {
+    // Pro volbu "Same as Phone" vrátíme aktuální posun telefonu od UTC
+    if (!targetTimezone || targetTimezone === 'local') {
+        // getTimezoneOffset() vrací rozdíl v minutách mezi UTC a lokálním časem.
+        // Znaménko je obrácené (např. pro UTC+2 vrátí -120), proto násobíme -60.
+        return new Date().getTimezoneOffset() * -60;
+    }
+    
+    try {
+        const now = new Date();
+        // Moderní a spolehlivý způsob, jak zjistit GMT posun pro jakoukoliv zónu
+        const formatter = new Intl.DateTimeFormat('en-US', {
+            timeZone: targetTimezone,
+            timeZoneName: 'longOffset', // Požadujeme formát jako "GMT-9:00"
+        });
+        
+        // Získáme jednotlivé části formátovaného data
+        const parts = formatter.formatToParts(now);
+        // Najdeme část, která obsahuje název zóny (náš požadovaný posun)
+        const offsetPart = parts.find(part => part.type === 'timeZoneName');
+        const offsetString = offsetPart.value; // Např. "GMT-9:00"
+
+        // Regulárním výrazem získáme znaménko, hodiny a minuty
+        const match = offsetString.match(/GMT([+-])(\d{1,2}):(\d{2})/);
+        if (!match) {
+            // Fallback pro zóny, které vrací jen "GMT" (UTC+0)
+            if (offsetString === 'GMT') return 0;
+            console.error("Could not parse offset string:", offsetString);
+            return 0;
+        }
+
+        const sign = match[1] === '-' ? -1 : 1;
+        const hours = parseInt(match[2], 10);
+        const minutes = parseInt(match[3], 10);
+
+        const offsetInSeconds = sign * (hours * 3600 + minutes * 60);
+        return offsetInSeconds;
+
+    } catch (e) {
+        console.error("Invalid timezone:", targetTimezone, e);
+        return 0;
+    }
+}
+
+
+function preloadImages(callback) {
+    let loaded = 0;
+    const sources = CONFIG.image_sources;
+    const numImages = Object.keys(sources).length;
+    for (const name in sources) {
+        preloaded_images[name] = new Image();
+        preloaded_images[name].onload = () => { if (++loaded >= numImages) callback(); };
+        preloaded_images[name].onerror = () => { console.warn(`Image not found: ${sources[name]}`); if (++loaded >= numImages) callback(); };
+        preloaded_images[name].src = sources[name];
+    }
+}
+
+function populateDropdowns() {
+    slot_ids.forEach(slotId => {
+        const select = document.getElementById('slot_' + slotId);
+        const lastChar = slotId.slice(-1);
+        const isEvenSlot = lastChar === '2' || lastChar === '4';
+        for (const type in complication_types) {
+            const isDoubleComplication = complication_types[type].isDouble;
+            if (!(isEvenSlot && isDoubleComplication)) {
+                select.options[select.options.length] = new Option(complication_types[type].name, type);
+            }
+        }
+    });
+}
+
+function setupEventListeners() {
+    slot_ids.forEach(slotId => document.getElementById('slot_' + slotId).addEventListener('change', (event) => updateAllSlots(event)));
+    document.getElementById('hh_bg_preview').addEventListener('click', openPalette);
+    document.getElementById('mm_bg_preview').addEventListener('click', openPalette);
+    document.getElementById('side_bg_preview').addEventListener('click', openPalette);
+    document.getElementById('paletteModal').addEventListener('click', (e) => { if (e.target.id === 'paletteModal') closePalette(); });
+    document.getElementById('save').addEventListener('click', saveConfiguration);
+    document.querySelectorAll('input, select:not([id^="slot_"])').forEach(el => el.addEventListener('change', redrawCanvas));
+}
+
+function updateAllSlots(event) {
+    if (event) {
+        const sourceElement = event.target;
+        const selectedValue = sourceElement.value;
+        if (selectedValue !== 'empty') {
+            slot_ids.forEach(slotId => {
+                const currentElement = document.getElementById('slot_' + slotId);
+                if (currentElement.id !== sourceElement.id && currentElement.value === selectedValue) {
+                    currentElement.value = 'empty';
+                }
+            });
+        }
+    }
+
+    const slots = [
+        { sel: document.getElementById('slot_L1'), next: document.getElementById('slot_L2') },
+        { sel: document.getElementById('slot_L3'), next: document.getElementById('slot_L4') },
+        { sel: document.getElementById('slot_R1'), next: document.getElementById('slot_R2') },
+        { sel: document.getElementById('slot_R3'), next: document.getElementById('slot_R4') }
+    ];
+    slots.forEach(pair => {
+        const is_double = complication_types[pair.sel.value]?.isDouble;
+        pair.next.disabled = is_double;
+        if (is_double) pair.next.value = 'empty';
+    });
+    
+    redrawCanvas();
+}
+
+function createTintedImage(image, color) {
+    if (!image || !image.complete || image.naturalHeight === 0) return null;
+    offscreenCtx.globalCompositeOperation = 'source-over';
+    offscreenCtx.clearRect(0, 0, offscreenCanvas.width, offscreenCanvas.height);
+    offscreenCtx.fillStyle = color;
+    offscreenCtx.fillRect(0, 0, offscreenCanvas.width, offscreenCanvas.height);
+    offscreenCtx.globalCompositeOperation = 'destination-in';
+    offscreenCtx.drawImage(image, 0, 0);
+    return offscreenCanvas;
+}
+
+function redrawCanvas() {
+    const canvas = document.getElementById('previewCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    ctx.fillStyle = 'black';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    if (document.getElementById('hourleft').checked) {h_shift=0;} else {h_shift=66;}
+    if (document.getElementById('minuteleft').checked) {m_shift=-66;} else {m_shift=0;}
+
+    const hours_color = document.getElementById('hh_bg_preview').style.backgroundColor;
+    const minutes_color = document.getElementById('mm_bg_preview').style.backgroundColor;
+    const side_color = document.getElementById('side_bg_preview').style.backgroundColor;
+
+    const tintedHours = createTintedImage(preloaded_images.hours, hours_color);
+    if (tintedHours) ctx.drawImage(tintedHours, h_shift, 0);
+
+    const tintedMinutes = createTintedImage(preloaded_images.minutes, minutes_color);
+    if (tintedMinutes) ctx.drawImage(tintedMinutes, m_shift, 0);
+    
+    slot_ids.forEach((slotId) => {
+        const selected_type_name = document.getElementById('slot_' + slotId).value;
+        if (selected_type_name !== 'empty') {
+            const type_info = complication_types[selected_type_name];
+            const image = preloaded_images[selected_type_name];
+            coords = CONFIG.coordinates[slotId];
+            if ((coords.y<100) && !document.getElementById('hourleft').checked) {coords.x=6}
+            if ((coords.y<100) && document.getElementById('hourleft').checked) {coords.x=138}
+            if ((coords.y>100) && document.getElementById('minuteleft').checked) {coords.x=138}
+            if ((coords.y>100) && !document.getElementById('minuteleft').checked) {coords.x=6}
+            if (image?.complete && image.naturalHeight !== 0 && coords) {
+                if (type_info.isTinted) {
+                    const tintedComplication = createTintedImage(image, side_color);
+                    if(tintedComplication) ctx.drawImage(tintedComplication, 0, 0, image.width, image.height, coords.x, coords.y, image.width, image.height);
+                } else {
+                    ctx.drawImage(image, coords.x, coords.y);
+                }
+            }
+        }
+    });
+}
+
+function saveConfiguration() {
+    const final_config = {};
+    Object.values(complication_types).forEach(type => {
+        if (type.key) {
+            final_config[type.key] = -1;
+        }
+    });
+
+    const slot_map = { L1: 4, L2: 5, L3: 6, L4: 7, R1: 0, R2: 1, R3: 2, R4: 3 };
+    const double_slot_map = { 0: 0, 2: 1, 4: 2, 6: 3 };
+
+    slot_ids.forEach(slotId => {
+        const select = document.getElementById('slot_' + slotId);
+        const selected_type = select.value;
+        if (selected_type !== 'empty' && !select.disabled) {
+            const complication = complication_types[selected_type];
+            const slot_number = slot_map[slotId];
+            if (complication.isDouble) final_config[complication.key] = double_slot_map[slot_number];
+            else final_config[complication.key] = slot_number;
+        }
+    });
+
+    final_config[CONFIG.keys.HH_BG] = hexToInt(document.getElementById('hh_bg_preview').style.backgroundColor);
+    final_config[CONFIG.keys.MM_BG] = hexToInt(document.getElementById('mm_bg_preview').style.backgroundColor);
+    final_config[CONFIG.keys.SIDE_BG] = hexToInt(document.getElementById('side_bg_preview').style.backgroundColor);
+    
+    // ZMĚNA: Použití nové funkce pro výpočet posunu
+    const timezoneIdentifier = document.getElementById('timezone').value;
+    final_config[CONFIG.keys.TIMEZONE] = getOffsetInSeconds(timezoneIdentifier);
+    // ZMĚNA: Uložíme i název zóny pro budoucí načtení
+    final_config[CONFIG.keys.TIMEZONE_NAME] = timezoneIdentifier;
+    
+    final_config[CONFIG.keys.INVERT] = document.getElementById('invert').checked;
+    final_config[CONFIG.keys.VIBRATE] = document.getElementById('vibrate').checked;
+    final_config[CONFIG.keys.DEGREE] = document.getElementById('degree_f').checked;
+    final_config[CONFIG.keys.HOURLEFT] = document.getElementById('hourleft').checked;
+    final_config[CONFIG.keys.MINUTELEFT] = document.getElementById('minuteleft').checked;
+    
+   console.log(final_config);
+    document.location = 'pebblejs://close#' + encodeURIComponent(JSON.stringify(final_config));
+}
+
+function loadConfiguration() {
+    const config_string = location.hash.substring(1);
+    stupne = 0;
+    const config = config_string ? JSON.parse(decodeURIComponent(config_string)) : {};
+    const defaults = CONFIG.defaults;
+
+    document.getElementById('hh_bg_preview').style.backgroundColor = intToHex(config[CONFIG.keys.HH_BG] ?? hexToInt(defaults.hh_bg));
+    document.getElementById('mm_bg_preview').style.backgroundColor = intToHex(config[CONFIG.keys.MM_BG] ?? hexToInt(defaults.mm_bg));
+    document.getElementById('side_bg_preview').style.backgroundColor = intToHex(config[CONFIG.keys.SIDE_BG] ?? hexToInt(defaults.side_bg));
+    // ZMĚNA: Načteme uložený název zóny, pokud existuje
+    document.getElementById('timezone').value = config[CONFIG.keys.TIMEZONE_NAME] ?? defaults.timezone;
+
+    if (config[CONFIG.keys.DEGREE]>0) {stupne=1;} else {stupne=0}
+
+    document.getElementById('hourleft').checked = config[CONFIG.keys.HOURLEFT] ?? defaults.hourleft;
+    document.getElementById('minuteleft').checked = config[CONFIG.keys.MINUTELEFT] ?? defaults.minuteleft;
+
+    // Timezone se při načítání nenastavuje, viz vysvětlení v odpovědi
+    document.getElementById('invert').checked = config[CONFIG.keys.INVERT] ?? defaults.invert;
+    document.getElementById('vibrate').checked = config[CONFIG.keys.VIBRATE] ?? defaults.vibrate;
+    document.getElementById('degree_c').checked = (stupne==0);
+    document.getElementById('degree_f').checked = (stupne==1);
+
+    if (config_string) {
+        const reverse_slot_map = { 4: 'L1', 5: 'L2', 6: 'L3', 7: 'L4', 0: 'R1', 1: 'R2', 2: 'R3', 3: 'R4' };
+        const reverse_double_slot_map = { 0: 'R1', 1: 'R3', 2: 'L1', 3: 'L3' };
+        for (const type_name in complication_types) {
+            const type_info = complication_types[type_name];
+            if (!type_info.key) continue;
+            const position = config[type_info.key];
+            if (position !== undefined && position !== -1) {
+                const slotId = type_info.isDouble ? reverse_double_slot_map[position] : reverse_slot_map[position];
+                if (slotId) document.getElementById('slot_' + slotId).value = type_name;
+            }
+        }
+    } else {
+        slot_ids.forEach(slotId => {
+            document.getElementById('slot_' + slotId).value = defaults['slot_' + slotId] || 'empty';
+        });
+    }
+}
+
+function generatePebblePalette() {
+    const grid = document.getElementById('paletteGrid');
+    const values = ['00', '55', 'aa', 'ff'];
+    for (let r=0;r<4;r++) for (let g=0;g<4;g++) for (let b=0;b<4;b++) {
+        const hex = `#${values[r]}${values[g]}${values[b]}`;
+        const swatch = document.createElement('div');
+        swatch.className = 'palette-swatch';
+        swatch.style.backgroundColor = hex;
+        swatch.dataset.color = hex;
+        swatch.addEventListener('click', selectColor);
+        grid.appendChild(swatch);
+    }
+}
+function openPalette(event) {
+    activeColorInputId = event.target.id;
+    document.getElementById('paletteModal').style.display = 'flex';
+}
+function selectColor(event) {
+    if (activeColorInputId) document.getElementById(activeColorInputId).style.backgroundColor = event.target.dataset.color;
+    closePalette();
+    redrawCanvas();
+}
+function closePalette() { document.getElementById('paletteModal').style.display = 'none'; }
+function intToHex(c) { return '#' + ('000000' + (c || 0).toString(16)).slice(-6); }
+function hexToInt(c) {
+    if (typeof c === 'string' && c.startsWith('rgb')) {
+        return parseInt(c.match(/\d+/g).map(v => ('0' + parseInt(v).toString(16)).slice(-2)).join(''), 16);
+    }
+    return parseInt((c || '#000000').substring(1), 16);
+}
+
+</script>
+<p>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+<input type="hidden" name="cmd" value="_donations">
+<input type="hidden" name="business" value="holcik@gmail.com">
+<input type="hidden" name="lc" value="CZ">
+<input type="hidden" name="item_name" value="TomHol">
+<input type="hidden" name="item_number" value="pebbleBlockFace">
+<input type="hidden" name="no_note" value="0">
+<input type="hidden" name="currency_code" value="USD">
+<input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+<img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
+</form>
+	</p>
+</body>
+</html>
