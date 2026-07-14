@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Photowatch Configuration</title>
+  <style>
+    body { font-family: sans-serif; padding: 10px; }
+    #status { margin-top: 10px; }
+    button { padding: 10px; font-size: 1em; }
+  </style>
+</head>
+<body>
+  <h1>Photowatch Settings</h1>
+  <p>Select a background image for your watchface.</p>
+  
+  <input type="file" id="image-picker" accept="image/*">
+  
+  <div id="status"></div>
+  
+  <button id="save-button">Save</button>
+
+  <script>
+    const imagePicker = document.getElementById('image-picker');
+    const saveButton = document.getElementById('save-button');
+    const statusEl = document.getElementById('status');
+    let imageDataUrl = null;
+
+    imagePicker.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) {
+        return;
+      }
+      
+      // Use FileReader to read the file as a Data URL
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        imageDataUrl = event.target.result;
+        statusEl.textContent = 'Image selected. Ready to save.';
+      };
+      reader.onerror = (err) => {
+        statusEl.textContent = 'Error reading file: ' + err;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    saveButton.addEventListener('click', () => {
+      if (!imageDataUrl) {
+        alert('Please select an image first!');
+        return;
+      }
+
+      // Create a dictionary of settings to return
+      const settings = {
+        'image': imageDataUrl
+      };
+
+      // Return to the Pebble app
+      const returnUrl = 'pebblejs://close#' + encodeURIComponent(JSON.stringify(settings));
+      document.location.href = returnUrl;
+    });
+  </script>
+</body>
+</html>
