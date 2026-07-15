@@ -37,7 +37,27 @@
         
         /* Zoom slider specifický styl */
         .zoom-control { margin-top: 5px; }
+
+        /* Styly pro presety */
+        .presets-container { display: flex; gap: 6px; margin-top: 15px; justify-content: center; }
+        .preset-slot { width: 50px; height: 57px; border: 2px solid #444; border-radius: 4px; background: #222; cursor: pointer; }
+        .preset-slot:hover { border-color: var(--accent); }
         
+        .save-preset-group { display: flex; gap: 6px; margin-top: 10px; justify-content: space-around; width: 100%; }
+        .save-preset-item { display: flex; flex-direction: column; align-items: center; gap: 4px; flex-basis: 0; flex-grow: 1; }
+        .save-preset-btn { width: 50px; background: #4a4a4a; font-size: 0.8rem; padding: 8px; border-radius: 4px; }
+        .clear-preset-btn { width: 50px; background: #c0392b; color: white; font-size: 0.8rem; padding: 8px; border-radius: 4px; }
+
+        /* Styly pro sbalitelné sekce */
+        .collapsible-header { background: var(--panel); padding: 15px; border-radius: 8px; cursor: pointer; user-select: none; display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+        .collapsible-header h2 { margin: 0; font-size: 1.1rem; }
+        .collapsible-header .indicator { transition: transform 0.3s ease; }
+        .collapsible-content { background: var(--panel); padding: 0 15px; max-height: 2000px; /* dostatečně velká hodnota */ overflow: hidden; transition: max-height 0.5s ease, padding 0.5s ease; border-radius: 0 0 8px 8px; }
+        .collapsible-content.collapsed { max-height: 0; padding-top: 0; padding-bottom: 0; }
+        .collapsible-header.collapsed { border-radius: 8px; }
+        .collapsible-header.collapsed .indicator { transform: rotate(-90deg); }
+        .collapsible-content > *:first-child { padding-top: 15px; }
+        .collapsible-content > *:last-child { padding-bottom: 15px; }
         #palettes { display: none; }
     </style>
 
@@ -50,75 +70,124 @@
     <h1>PhotoWatch configuration 0.6</h1>
 
     <div class="container">
-        <div class="panel">
-            <label>Upload Image:</label>
-            <input type="file" id="upload" accept="image/*">
-            <label style="margin-top: 10px;">...or paste Image URL:</label>
-            <input type="text" id="image-url" placeholder="https://i.imgur.com/your-image.png" style="width: 100%; padding: 10px; margin-top: 5px; background: #333; color: white; border: 1px solid #444; border-radius: 4px; box-sizing: border-box;">
+        <!-- Sekce 1: Výběr obrázku -->
+        <div class="collapsible-section">
+            <div class="collapsible-header">
+                <h2>1. Select image</h2>
+                <span class="indicator">▼</span>
+            </div>
+            <div class="collapsible-content">
+                <label>Upload Image:</label>
+                <input type="file" id="upload" accept="image/*">
+                <label style="margin-top: 10px;">...or paste Image URL:</label>
+                <input type="text" id="image-url" placeholder="https://i.imgur.com/your-image.png" style="width: 100%; padding: 10px; margin-top: 5px; background: #333; color: white; border: 1px solid #444; border-radius: 4px; box-sizing: border-box;">
+                <div class="presets-container">
+                    <canvas id="preset-0" class="preset-slot" data-slot="0" width="50" height="57"></canvas>
+                    <canvas id="preset-1" class="preset-slot" data-slot="1" width="50" height="57"></canvas>
+                    <canvas id="preset-2" class="preset-slot" data-slot="2" width="50" height="57"></canvas>
+                    <canvas id="preset-3" class="preset-slot" data-slot="3" width="50" height="57"></canvas>
+                    <canvas id="preset-4" class="preset-slot" data-slot="4" width="50" height="57"></canvas>
+                </div>
+            </div>
+        </div>
 
-
-            <div class="side-by-side">
-                <div class="canvas-wrapper">
-                    <div class="canvas-title">Original</div>
-                    <canvas id="cropCanvas" width="200" height="228"></canvas>
-                    <div class="zoom-control">
-                        <label style="margin-top:0;">Zoom:</label>
-			<input type="range" id="zoom" min="0.1" max="3" step="0.01" value="1" style="width:90%;accent-color: var(--accent);">
+        <!-- Sekce 2: Úprava obrázku -->
+        <div class="collapsible-section">
+            <div class="collapsible-header">
+                <h2>2. Tune image</h2>
+                <span class="indicator">▼</span>
+            </div>
+            <div class="collapsible-content">
+                <div class="side-by-side" style="padding-top: 15px;">
+                    <div class="canvas-wrapper">
+                        <div class="canvas-title">Original</div>
+                        <canvas id="cropCanvas" width="200" height="228"></canvas>
+                        <div class="zoom-control">
+                            <label style="margin-top:0;">Zoom:</label>
+                            <input type="range" id="zoom" min="0.1" max="3" step="0.01" value="1" style="width:90%;accent-color: var(--accent);">
+                        </div>
+                    </div>
+                    <div class="canvas-wrapper">
+                        <div class="canvas-title">Real Pebble view</div>
+                        <canvas id="sunCanvas" width="200" height="228"></canvas>
                     </div>
                 </div>
-
-                <div class="canvas-wrapper">
-                    <div class="canvas-title">Real Pebble view</div>
-                    <canvas id="sunCanvas" width="200" height="228"></canvas>
+                <div class="btn-group">
+                    <button id="autoBtn" class="btn-auto">🪄 Auto-Fix</button>
+                    <button id="resetBtn" class="btn-reset">Reset</button>
+                </div>
+                <label>Gamma (Mid-tones):</label>
+                <div class="controls-row">
+                    <input type="range" id="gamma" min="0.1" max="3" step="0.1" value="1">
+                    <input type="number" id="gaVal" value="1" step="0.1">
+                </div>
+                <label>Brightness:</label>
+                <div class="controls-row">
+                    <input type="range" id="brightness" min="-100" max="100" value="0">
+                    <input type="number" id="brVal" value="0">
+                </div>
+                <label>Contrast:</label>
+                <div class="controls-row">
+                    <input type="range" id="contrast" min="-100" max="100" value="0">
+                    <input type="number" id="coVal" value="0">
+                </div>
+                <label>Saturation:</label>
+                <div class="controls-row">
+                    <input type="range" id="saturation" min="-100" max="100" value="0">
+                    <input type="number" id="saVal" value="0">
+                </div>
+                <label>Sharpen (Structure):</label>
+                <div class="controls-row">
+                    <input type="range" id="sharpen" min="0" max="100" value="0">
+                    <input type="number" id="shVal" value="0">
                 </div>
             </div>
-            <div class="btn-group">
-                <button id="autoBtn" class="btn-auto">🪄 Auto-Fix</button>
-                <button id="resetBtn" class="btn-reset">Reset</button>
-            </div>
-
-            <label>Gamma (Mid-tones):</label>
-            <div class="controls-row">
-                <input type="range" id="gamma" min="0.1" max="3" step="0.1" value="1">
-                <input type="number" id="gaVal" value="1" step="0.1">
-            </div>
-
-            <label>Brightness:</label>
-            <div class="controls-row">
-                <input type="range" id="brightness" min="-100" max="100" value="0">
-                <input type="number" id="brVal" value="0">
-            </div>
-
-            <label>Contrast:</label>
-            <div class="controls-row">
-                <input type="range" id="contrast" min="-100" max="100" value="0">
-                <input type="number" id="coVal" value="0">
-            </div>
-
-            <label>Saturation:</label>
-            <div class="controls-row">
-                <input type="range" id="saturation" min="-100" max="100" value="0">
-                <input type="number" id="saVal" value="0">
-            </div>
-
-            <label>Sharpen (Structure):</label>
-            <div class="controls-row">
-                <input type="range" id="sharpen" min="0" max="100" value="0">
-                <input type="number" id="shVal" value="0">
-            </div>
-
-            
         </div>
 
-        <div class="panel canvas-container">
-            
-            <div class="canvas-wrapper" style="width:100%; max-width: 200px;">
-                <div class="canvas-title">3. Export (Standard)</div>
-                <canvas id="outCanvas" width="200" height="228"></canvas>
-                <!-- Tlačítko pro odeslání do hodinek, zpočátku neaktivní -->
-                <button id="sendToWatchBtn" style="margin-top: 10px; background: var(--accent);" disabled>Send to watch</button>
+        <!-- Sekce 3: Export -->
+        <div class="collapsible-section">
+            <div class="collapsible-header">
+                <h2>3. Export image</h2>
+                <span class="indicator">▼</span>
+            </div>
+            <div class="collapsible-content">
+                <div class="save-preset-group" style="padding-top: 15px; margin-bottom: 15px;">
+                    <div class="save-preset-item">
+                        <button class="save-preset-btn" data-slot="0">Save</button>
+                        <canvas id="save-preset-thumb-0" class="preset-slot" data-slot="0" width="50" height="57"></canvas>
+                        <button class="clear-preset-btn" data-slot="0">Clear</button>
+                    </div>
+                    <div class="save-preset-item">
+                        <button class="save-preset-btn" data-slot="1">Save</button>
+                        <canvas id="save-preset-thumb-1" class="preset-slot" data-slot="1" width="50" height="57"></canvas>
+                        <button class="clear-preset-btn" data-slot="1">Clear</button>
+                    </div>
+                    <div class="save-preset-item">
+                        <button class="save-preset-btn" data-slot="2">Save</button>
+                        <canvas id="save-preset-thumb-2" class="preset-slot" data-slot="2" width="50" height="57"></canvas>
+                        <button class="clear-preset-btn" data-slot="2">Clear</button>
+                    </div>
+                    <div class="save-preset-item">
+                        <button class="save-preset-btn" data-slot="3">Save</button>
+                        <canvas id="save-preset-thumb-3" class="preset-slot" data-slot="3" width="50" height="57"></canvas>
+                        <button class="clear-preset-btn" data-slot="3">Clear</button>
+                    </div>
+                    <div class="save-preset-item">
+                        <button class="save-preset-btn" data-slot="4">Save</button>
+                        <canvas id="save-preset-thumb-4" class="preset-slot" data-slot="4" width="50" height="57"></canvas>
+                        <button class="clear-preset-btn" data-slot="4">Clear</button>
+                    </div>
+                </div>
+                <div class="canvas-container">
+                    <div class="canvas-wrapper" style="width:100%; max-width: 200px;">
+                        <div class="canvas-title">Export (Standard)</div>
+                        <canvas id="outCanvas" width="200" height="228"></canvas>
+                        <button id="sendToWatchBtn" style="margin-top: 10px; background: var(--accent);" disabled>Send to watch</button>
+                    </div>
+                </div>
             </div>
         </div>
+
     </div>
 
     <div id="palettes">
@@ -161,6 +230,8 @@
             loadPalette('img-defined', palettesData.defined);
             loadPalette('img-sun', palettesData.sun);
             drawCropCanvas();
+            // Načteme uložené presety při startu
+            initPresets();
         };
 
         // Sjednocená funkce pro zpracování načteného obrázku (ze souboru i z URL)
@@ -553,6 +624,168 @@
             const returnUrl = 'pebblejs://close#' + encodeURIComponent(JSON.stringify(settings));
             document.location.href = returnUrl;
         });
+
+        // --- Funkcionalita pro ukládání a načítání presetů ---
+        const NUM_PRESETS = 5;
+
+        function savePreset(slotIndex) {
+            if (!sourceImg) {
+                document.getElementById('status').textContent = 'Nelze uložit prázdný preset. Nejprve nahrajte obrázek.';
+                return;
+            }
+
+            // 1. Vytvoříme dočasné plátno pro vygenerování náhledu
+            const tempThumbCanvas = document.createElement('canvas');
+            tempThumbCanvas.width = 50;
+            tempThumbCanvas.height = 57;
+            const tempThumbCtx = tempThumbCanvas.getContext('2d');
+            tempThumbCtx.drawImage(outCanvas, 0, 0, 50, 57);
+            const thumbnailDataUrl = tempThumbCanvas.toDataURL();
+
+            let imageDataToSave = sourceImg.src;
+            let scaleToSave = imgScale;
+
+            // --- OPRAVA: QuotaExceededError při opětovném uložení ---
+            // Problém: Opakovaná komprese již zkomprimovaného obrázku.
+            // Řešení: Komprimujeme pouze pokud zdroj NENÍ již dataURL z localStorage.
+            // Data z localStorage jsou již zkomprimovaná (image/jpeg). Původní upload je typicky image/png nebo velký jpeg.
+            if (!sourceImg.src.startsWith('data:image/jpeg')) {
+                const MAX_PRESET_DIM = 400;
+                const originalScale = imgScale;
+                const aspect = sourceImg.width / sourceImg.height;
+                let w = sourceImg.width;
+                let h = sourceImg.height;
+                if (w > MAX_PRESET_DIM || h > MAX_PRESET_DIM) {
+                    if (w > h) { w = MAX_PRESET_DIM; h = w / aspect; } 
+                    else { h = MAX_PRESET_DIM; w = h * aspect; }
+                }
+                const tempImageCanvas = document.createElement('canvas');
+                tempImageCanvas.width = w; tempImageCanvas.height = h;
+                const tempImageCtx = tempImageCanvas.getContext('2d');
+                tempImageCtx.drawImage(sourceImg, 0, 0, w, h);
+                imageDataToSave = tempImageCanvas.toDataURL('image/jpeg', 0.8); // JPEG komprese
+
+                // OPRAVA: Přepočítáme scale pro zmenšený obrázek
+                const scaleRatio = w / sourceImg.width;
+                scaleToSave = originalScale / scaleRatio;
+            }
+
+            // 2. Sestavíme objekt s nastavením
+            const presetData = {
+                imageDataUrl: imageDataToSave,
+                thumbnailDataUrl: thumbnailDataUrl,
+                settings: {
+                    imgScale: scaleToSave,
+                    imgX: imgX,
+                    imgY: imgY,
+                    brightness: document.getElementById('brightness').value,
+                    contrast: document.getElementById('contrast').value,
+                    saturation: document.getElementById('saturation').value,
+                    sharpen: document.getElementById('sharpen').value,
+                    gamma: document.getElementById('gamma').value,
+                }
+            };
+
+            // 3. Uložíme do localStorage
+            localStorage.setItem(`photowatch_preset_${slotIndex}`, JSON.stringify(presetData));
+            
+            // 4. Aktualizujeme zobrazený náhled ve slotu
+            const topPresetCanvas = document.getElementById(`preset-${slotIndex}`);
+            const topPresetCtx = topPresetCanvas.getContext('2d');
+            topPresetCtx.clearRect(0, 0, 50, 57);
+            topPresetCtx.drawImage(tempThumbCanvas, 0, 0);
+
+            const bottomPresetCanvas = document.getElementById(`save-preset-thumb-${slotIndex}`);
+            const bottomPresetCtx = bottomPresetCanvas.getContext('2d');
+            bottomPresetCtx.clearRect(0, 0, 50, 57);
+            bottomPresetCtx.drawImage(tempThumbCanvas, 0, 0);
+            document.getElementById('status').textContent = `Konfigurace uložena do slotu ${slotIndex + 1}.`;
+        }
+
+        function clearPreset(slotIndex) {
+            // 1. Smažeme data z localStorage
+            localStorage.removeItem(`photowatch_preset_${slotIndex}`);
+
+            // 2. Vyčistíme náhledy
+            const topPresetCanvas = document.getElementById(`preset-${slotIndex}`);
+            const topPresetCtx = topPresetCanvas.getContext('2d');
+            topPresetCtx.clearRect(0, 0, 50, 57);
+
+            const bottomPresetCanvas = document.getElementById(`save-preset-thumb-${slotIndex}`);
+            const bottomPresetCtx = bottomPresetCanvas.getContext('2d');
+            bottomPresetCtx.clearRect(0, 0, 50, 57);
+
+            document.getElementById('status').textContent = `Slot ${slotIndex + 1} byl vymazán.`;
+        }
+
+        function loadPreset(slotIndex) {
+            const presetJSON = localStorage.getItem(`photowatch_preset_${slotIndex}`);
+            if (!presetJSON) {
+                document.getElementById('status').textContent = `Slot ${slotIndex + 1} je prázdný.`;
+                return;
+            }
+
+            const presetData = JSON.parse(presetJSON);
+
+            // Načteme obrázek a po načtení aplikujeme nastavení
+            const img = new Image();
+            img.onload = () => {
+                sourceImg = img;
+
+                // Aplikujeme uložené hodnoty
+                const settings = presetData.settings;
+                imgScale = parseFloat(settings.imgScale);
+                imgX = parseFloat(settings.imgX);
+                imgY = parseFloat(settings.imgY);
+                
+                document.getElementById('zoom').value = imgScale;
+                ['brightness', 'contrast', 'saturation', 'sharpen', 'gamma'].forEach(id => {
+                    document.getElementById(id).value = settings[id];
+                    document.getElementById(id.substring(0, 2) + 'Val').value = settings[id];
+                });
+
+                drawCropCanvas();
+                processImage();
+                document.getElementById('sendToWatchBtn').disabled = false;
+                document.getElementById('status').textContent = `Načtena konfigurace ze slotu ${slotIndex + 1}.`;
+            };
+            img.src = presetData.imageDataUrl;
+        }
+
+        function initPresets() {
+            for (let i = 0; i < NUM_PRESETS; i++) {
+                const presetJSON = localStorage.getItem(`photowatch_preset_${i}`);
+                if (presetJSON) {
+                    const presetData = JSON.parse(presetJSON);
+                    const thumb = new Image();
+                    thumb.onload = () => {
+                        // Vykreslíme náhled na obou místech
+                        const topPresetCanvas = document.getElementById(`preset-${i}`);
+                        const topPresetCtx = topPresetCanvas.getContext('2d');
+                        topPresetCtx.drawImage(thumb, 0, 0);
+
+                        const bottomPresetCanvas = document.getElementById(`save-preset-thumb-${i}`);
+                        const bottomPresetCtx = bottomPresetCanvas.getContext('2d');
+                        bottomPresetCtx.drawImage(thumb, 0, 0);
+                    };
+                    thumb.src = presetData.thumbnailDataUrl;
+                }
+                document.getElementById(`preset-${i}`).addEventListener('click', (e) => loadPreset(parseInt(e.target.dataset.slot)));
+                document.getElementById(`save-preset-thumb-${i}`).addEventListener('click', (e) => loadPreset(parseInt(e.target.dataset.slot)));
+                document.querySelector(`.save-preset-btn[data-slot="${i}"]`).addEventListener('click', (e) => savePreset(parseInt(e.target.dataset.slot)));
+                document.querySelector(`.clear-preset-btn[data-slot="${i}"]`).addEventListener('click', (e) => clearPreset(parseInt(e.target.dataset.slot)));
+            }
+        }
+
+        // --- Funkcionalita pro sbalitelné sekce ---
+        document.querySelectorAll('.collapsible-header').forEach(header => {
+            header.addEventListener('click', () => {
+                const content = header.nextElementSibling;
+                content.classList.toggle('collapsed');
+                header.classList.toggle('collapsed');
+            });
+        });
+
     </script>
 </body>
 </html>
