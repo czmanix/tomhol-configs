@@ -532,13 +532,12 @@
                 return;
             }
             const outImageData = outCtx.getImageData(0, 0, 200, 228);
-            // OPRAVA: Získání ArrayBuffer z Uint8ClampedArray. Toto je správný a spolehlivý způsob.
-            // .slice() vytvoří kopii, což zajistí, že .buffer odkazuje na správná data.
-            const rgbaBuffer = outImageData.data.slice().buffer;
+            // OPRAVA: Knihovna UPNG.js si umí poradit přímo s polem Uint8ClampedArray (outImageData.data).
+            // Je to spolehlivější než se pokoušet získat podkladový ArrayBuffer.
 
             // 2. Pomocí UPNG.js vytvoříme paletizovaný a komprimovaný PNG
             // Použijeme 64 barev (stejně jako Pebble) pro optimální velikost
-            const finalPngData = UPNG.encode([rgbaBuffer], 200, 228, 64);
+            const finalPngData = UPNG.encode([outImageData.data], 200, 228, 64);
 
             statusEl.textContent = `Data připravena. Velikost: ${finalPngData.byteLength} bajtů. Odesílám...`;
 
