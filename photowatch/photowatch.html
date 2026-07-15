@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Photowatch Configuration</title>
+  <style>
+    body { font-family: sans-serif; padding: 10px; max-width: 400px; margin: 0 auto; }
+    #status { margin-top: 15px; color: #333; }
+    canvas { border: 1px solid #333; margin-top: 10px; background-color: #000; }
+    button { padding: 10px; font-size: 1em; width: 100%; }
+    input[type="text"] { width: calc(100% - 22px); padding: 10px; margin: 10px 0; }
+    .instructions { background-color: #f0f0f0; padding: 10px; border-radius: 5px; font-size: 0.9em;}
+  </style>
+</head>
+<body>
+  <h1>Photowatch Settings</h1>
+  <div class="instructions">
+    <p><b>1.</b> Nahrajte obrázek na službu jako <a href="https://imgur.com/upload" target="_blank">Imgur</a>.</p>
+    <p><b>2.</b> Zkopírujte přímý odkaz na obrázek (musí končit např. .png nebo .jpg).</p>
+    <p>https://czmanix.github.io/tomhol-configs/testimg.png</p>
+    <p><b>3.</b> Vložte odkaz do pole níže a uložte.</p>
+  </div>
+  <input type="text" id="image-url" placeholder="https://i.imgur.com/your-image.png">
+  
+  <p>Náhled:</p>
+  <canvas id="preview-canvas" width="200" height="228"></canvas>
+
+  <div id="status"></div>
+  
+  <button id="save-button" disabled>Uložit</button>
+
+  <!-- Načteme knihovny potřebné pro zpracování PNG -->
+  <script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/upng-js@2.1.0/UPNG.js"></script>
+  
+  <script>
+    const imageUrlInput = document.getElementById('image-url');
+    const saveButton = document.getElementById('save-button');
+    const statusEl = document.getElementById('status');
+    const previewCanvas = document.getElementById('preview-canvas');
+    const previewCtx = previewCanvas.getContext('2d');
+
+    const WATCH_WIDTH = 200;
+    const WATCH_HEIGHT = 228;
+
+    let finalPngData = null; // Zde uložíme finální binární PNG data
+
+    // Funkce pro převedení ArrayBuffer na Base64 string
+    function bufferToBase64(buffer) {
+      let binary = '';
+      const bytes = new Uint8Array(buffer);
+      const len = bytes.byteLength;
+      for (let i = 0; i < len; i++) {
+        binary += String.fromCharCode(bytes[i]);
+      }
+      return window.btoa(binary);
+    }
+
+    async function processImageUrl(url) {
+      try {
+        statusEl.textContent = 'Stahuji obrázek...';
+        saveButton.disabled = true;
+        finalPngData = null;
+
+        const image = new Image();
+        image.crossOrigin = 'anonymous'; // Nutné pro načítání obrázků z jiných domén
+        image.src = url;
+
+        image.onload = () => {
+          statusEl.textContent = 'Zpracovávám obrázek...';
+          
+          // 1. Vykreslíme obrázek na skrytý canvas pro zpracování
+          const processingCanvas = document.createElement('canvas');
+          const processingCtx = processingCanvas.getContext('2d');
+          processingCanvas.width = WATCH_WIDTH;
+          processingCanvas.height = WATCH_HEIGHT;
+          processingCtx.drawImage(image, 0, 0, WATCH_WIDTH, WATCH_HEIGHT);
+
+          // 2. Získáme surová RGBA data
+          const imageData = processingCtx.getImageData(0, 0, WATCH_WIDTH, WATCH_HEIGHT);
+          const rgbaBuffer = imageData.data.buffer;
+
+          // 3. Pomocí UPNG.js vytvoříme paletizovaný a komprimovaný PNG
+          // Toto je klíčový krok, který zaručí správný formát pro hodinky
+          finalPngData = UPNG.encode([rgbaBuffer], WATCH_WIDTH, WATCH_HEIGHT, 64);
+
+          // 4. Zobrazíme náhled
+          // Musíme dekódovat náš nově vytvořený PNG, abychom ho mohli zobrazit
+          const decodedPng = UPNG.decode(finalPngData);
+          const decodedRgba = UPNG.toRGBA8(decodedPng)[0];
+          const decodedImageData = new ImageData(new Uint8ClampedArray(decodedRgba), WATCH_WIDTH, WATCH_HEIGHT);
+          previewCtx.putImageData(decodedImageData, 0, 0);
+
+          statusEl.textContent = `Hotovo! Velikost dat: ${finalPngData.byteLength} bajtů.`;
+          saveButton.disabled = false;
+        };
+
+        image.onerror = () => {
+          statusEl.textContent = 'Chyba: Nelze načíst obrázek z dané URL.';
+        };
+      } catch (e) {
+        statusEl.textContent = `Chyba: ${e.message}`;
+      }
+    }
+
+    imageUrlInput.addEventListener('input', (e) => {
+      // Jednoduchá validace URL a spuštění zpracování
+      if (e.target.value.startsWith('http')) {
+        processImageUrl(e.target.value);
+      }
+    });
+
+    saveButton.addEventListener('click', () => {
+      if (!finalPngData) {
+        alert('Nejdříve vložte platnou URL a počkejte na zpracování obrázku!');
+        return;
+      }
+
+      const settings = {
+        // Převedeme binární data na Base64 a pošleme je
+        'png_base64': bufferToBase64(finalPngData)
+      };
+
+      const returnUrl = 'pebblejs://close#' + encodeURIComponent(JSON.stringify(settings));
+      document.location.href = returnUrl;
+    });
+  </script>
+</body>
+</html>
