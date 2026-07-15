@@ -46,7 +46,7 @@
 </head>
 <body>
 
-    <h1>PhotoWatch configuration 0.3</h1>
+    <h1>PhotoWatch configuration 0.4</h1>
 
     <div class="container">
         <div class="panel">
@@ -526,17 +526,33 @@
             const statusEl = document.getElementById('status');
             statusEl.textContent = 'Připravuji data pro odeslání...';
 
-            // 1. Získáme data z finálního plátna 'outCanvas'
             if (!sourceImg) {
                 statusEl.textContent = 'Chyba: Není co odeslat. Nejprve nahrajte a upravte obrázek.';
                 return;
             }
-            const outImageData = outCtx.getImageData(0, 0, 200, 228);
-            // OPRAVA: Vracíme se k metodě z funkčního photowatch.html.
-            // Získání .buffer přímo z .data je správný způsob.
+
+            // --- DIAGNOSTIKA A OPRAVA ---
+            // Problém: Získání .buffer z ImageData vytvořeného pomocí putImageData je nespolehlivé.
+            // Řešení: Vytvoříme nové, čisté plátno, překreslíme na něj finální obrázek
+            // a z něj získáme data. Tím kopírujeme funkční postup z photowatch.html.
+            
+            statusEl.textContent = 'Krok 1: Vytváření dočasného plátna...';
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = 200;
+            tempCanvas.height = 228;
+            const tempCtx = tempCanvas.getContext('2d');
+
+            statusEl.textContent = 'Krok 2: Kopírování finálního obrázku...';
+            tempCtx.drawImage(outCanvas, 0, 0);
+
+            statusEl.textContent = 'Krok 3: Získávání obrazových dat...';
+            const finalImageData = tempCtx.getImageData(0, 0, 200, 228);
+            const finalImageBuffer = finalImageData.data.buffer;
 
             // 2. Pomocí UPNG.js vytvoříme paletizovaný a komprimovaný PNG
-            const finalPngData = UPNG.encode([outImageData.data.buffer], 200, 228, 64);
+            statusEl.textContent = 'Krok 4: Enkódování do formátu PNG...';
+            const finalPngData = UPNG.encode([finalImageBuffer], 200, 228, 64);
+            // --- KONEC DIAGNOSTIKY A OPRAVY ---
 
             statusEl.textContent = `Data připravena. Velikost: ${finalPngData.byteLength} bajtů. Odesílám...`;
 
