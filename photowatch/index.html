@@ -66,9 +66,6 @@
     <script src="https://cdn.jsdelivr.net/npm/upng-js@2.1.0/UPNG.js"></script>
 </head>
 <body>
-
-    <h1>PhotoWatch configuration 0.6</h1>
-
     <div class="container">
         <!-- Sekce 1: Výběr obrázku -->
         <div class="collapsible-section">
@@ -79,7 +76,7 @@
             <div class="collapsible-content">
                 <label>Upload Image:</label>
                 <input type="file" id="upload" accept="image/*">
-                <label style="margin-top: 10px;">...or paste Image URL:</label>
+                <label style="margin-top: 10px;">...or paste <a href="uploader.html" target="_blank">Image URL</a>:</label>
                 <input type="text" id="image-url" placeholder="https://i.imgur.com/your-image.png" style="width: 100%; padding: 10px; margin-top: 5px; background: #333; color: white; border: 1px solid #444; border-radius: 4px; box-sizing: border-box;">
                 <div class="presets-container">
                     <canvas id="preset-0" class="preset-slot" data-slot="0" width="50" height="57"></canvas>
@@ -143,7 +140,7 @@
                 </div>
                 <div style="margin-top: 15px; display: flex; align-items: center; gap: 10px;">
                     <input type="checkbox" id="bypass" style="width: auto; margin: 0;">
-                    <label for="bypass" style="margin: 0; font-weight: normal;">Bypass processing (for pre-dithered images)</label>
+                    <label for="bypass" style="margin: 0; font-weight: normal;">Bypass processing</label>
                 </div>
             </div>
         </div>
