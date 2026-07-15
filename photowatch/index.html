@@ -46,7 +46,7 @@
 </head>
 <body>
 
-    <h1>PhotoWatch configuration 0.2</h1>
+    <h1>PhotoWatch configuration 0.3</h1>
 
     <div class="container">
         <div class="panel">
@@ -532,12 +532,11 @@
                 return;
             }
             const outImageData = outCtx.getImageData(0, 0, 200, 228);
-            // OPRAVA: Knihovna UPNG.js si umí poradit přímo s polem Uint8ClampedArray (outImageData.data).
-            // Je to spolehlivější než se pokoušet získat podkladový ArrayBuffer.
+            // OPRAVA: Vracíme se k metodě z funkčního photowatch.html.
+            // Získání .buffer přímo z .data je správný způsob.
 
             // 2. Pomocí UPNG.js vytvoříme paletizovaný a komprimovaný PNG
-            // Použijeme 64 barev (stejně jako Pebble) pro optimální velikost
-            const finalPngData = UPNG.encode([outImageData.data], 200, 228, 64);
+            const finalPngData = UPNG.encode([outImageData.data.buffer], 200, 228, 64);
 
             statusEl.textContent = `Data připravena. Velikost: ${finalPngData.byteLength} bajtů. Odesílám...`;
 
