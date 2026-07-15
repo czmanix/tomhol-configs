@@ -141,6 +141,10 @@
                     <input type="range" id="sharpen" min="0" max="100" value="0">
                     <input type="number" id="shVal" value="0">
                 </div>
+                <div style="margin-top: 15px; display: flex; align-items: center; gap: 10px;">
+                    <input type="checkbox" id="bypass" style="width: auto; margin: 0;">
+                    <label for="bypass" style="margin: 0; font-weight: normal;">Bypass processing (for pre-dithered images)</label>
+                </div>
             </div>
         </div>
 
@@ -464,6 +468,19 @@
             const refPalette = palettesData['sun'];
             if (!sourceImg || refPalette.length === 0) return;
             
+            // --- NOVÉ: Bypass pro předem ditherované obrázky ---
+            const bypassCheckbox = document.getElementById('bypass');
+            if (bypassCheckbox.checked) {
+                const w = 200; const h = 228;
+                const imgData = cropCtx.getImageData(0, 0, w, h);
+                // Jednoduše zkopírujeme oříznutý obrázek do obou náhledů bez jakékoliv změny
+                outCtx.putImageData(imgData, 0, 0);
+                sunCtx.putImageData(imgData, 0, 0);
+                return; // Ukončíme funkci zde
+            }
+            // --- KONEC NOVÉ ČÁSTI ---
+
+
             const w = 200; const h = 228;
             const imgData = cropCtx.getImageData(0, 0, w, h);
             const data = imgData.data;
@@ -580,6 +597,20 @@
             outCtx.putImageData(outData, 0, 0);
             sunCtx.putImageData(sunData, 0, 0);
         }
+
+        // --- Funkcionalita pro Bypass checkbox ---
+        document.getElementById('bypass').addEventListener('change', function(e) {
+            const isBypassed = e.target.checked;
+            const controls = ['gamma', 'gaVal', 'brightness', 'brVal', 'contrast', 'coVal', 'saturation', 'saVal', 'sharpen', 'shVal', 'autoBtn', 'resetBtn'];
+            
+            controls.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.disabled = isBypassed;
+                }
+            });
+            processImage(); // Znovu zpracujeme obrázek s novým nastavením
+        });
 
         // --- Funkcionalita pro odeslání do hodinek (z photowatch.html) ---
 
