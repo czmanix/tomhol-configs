@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PhotoWatch configuration</title>
+    <style>
+        :root { --bg: #1e1e1e; --panel: #2a2a2a; --text: #eee; --accent: #00a86b; --auto: #007acc; }
+        body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: sans-serif; display: flex; flex-direction: column; align-items: center; }
+        h1 { font-size: 1.2rem; margin: 15px 0; text-align: center; }
+        
+        .container { width: 100%; max-width: 500px; padding: 10px; box-sizing: border-box; }
+        .panel { background: var(--panel); padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+        
+        label { display: block; margin-top: 5px; font-size: 0.9rem; font-weight: bold; color: #aaa; }
+        .controls-row { display: flex; align-items: center; gap: 10px; margin-top: 0px; }
+        .controls-row input[type="range"] { flex-grow: 1; accent-color: var(--accent); }
+        .controls-row input[type="number"] { width: 60px; padding: 5px; background: #333; color: white; border: 1px solid #444; border-radius: 4px; text-align: center; }
+        
+        input[type="file"], button { width: 100%; padding: 10px; margin-top: 5px; background: #333; color: white; border: 1px solid #444; border-radius: 4px; box-sizing: border-box; }
+        button { font-weight: bold; cursor: pointer; border: none; transition: background 0.2s; padding: 12px; }
+        
+        .btn-group { display: flex; gap: 10px; margin-top: 15px; }
+        .btn-auto { background: var(--auto); color: white; flex-grow: 1; border-radius: 4px; }
+        .btn-auto:active { background: #005f9e; }
+        .btn-reset { background: #555; color: white; flex-grow: 1; border-radius: 4px; }
+        .btn-reset:active { background: #444; }
+
+        .canvas-container { display: flex; flex-direction: column; align-items: center; gap: 15px; }
+        
+        /* Nové rozložení vedle sebe pro originál a náhled */
+        .side-by-side { display: flex; width: 100%; gap: 10px; justify-content: center; }
+        .canvas-wrapper { text-align: center; flex: 1; min-width: 0; display: flex; flex-direction: column; }
+        
+        .canvas-title { font-size: 0.8rem; margin-bottom: 5px; color: #aaa; }
+        canvas { border: 2px solid #444; border-radius: 4px; background: #000; touch-action: none; width: 100%; max-width: 200px; height: auto; margin: 0 auto; }
+        
+        /* Zoom slider specifický styl */
+        .zoom-control { margin-top: 5px; }
+        
+        #palettes { display: none; }
+    </style>
+
+    <!-- Knihovna pro enkódování PNG, převzato z photowatch.html -->
+    <script src="https://cdn.jsdelivr.net/npm/upng-js@2.1.0/UPNG.js"></script>
+</head>
+<body>
+
+    <h1>PhotoWatch configuration</h1>
+
+    <div class="container">
+        <div class="panel">
+            <label>Upload Image:</label>
+            <input type="file" id="upload" accept="image/*">
+            <label style="margin-top: 10px;">...or paste Image URL:</label>
+            <input type="text" id="image-url" placeholder="https://i.imgur.com/your-image.png" style="width: 100%; padding: 10px; margin-top: 5px; background: #333; color: white; border: 1px solid #444; border-radius: 4px; box-sizing: border-box;">
+
+
+            <div class="side-by-side">
+                <div class="canvas-wrapper">
+                    <div class="canvas-title">Original</div>
+                    <canvas id="cropCanvas" width="200" height="228"></canvas>
+                    <div class="zoom-control">
+                        <label style="margin-top:0;">Zoom:</label>
+			<input type="range" id="zoom" min="0.1" max="3" step="0.01" value="1" style="width:90%;accent-color: var(--accent);">
+                    </div>
+                </div>
+
+                <div class="canvas-wrapper">
+                    <div class="canvas-title">Real Pebble view</div>
+                    <canvas id="sunCanvas" width="200" height="228"></canvas>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button id="autoBtn" class="btn-auto">🪄 Auto-Fix</button>
+                <button id="resetBtn" class="btn-reset">Reset</button>
+            </div>
+
+            <label>Gamma (Mid-tones):</label>
+            <div class="controls-row">
+                <input type="range" id="gamma" min="0.1" max="3" step="0.1" value="1">
+                <input type="number" id="gaVal" value="1" step="0.1">
+            </div>
+
+            <label>Brightness:</label>
+            <div class="controls-row">
+                <input type="range" id="brightness" min="-100" max="100" value="0">
+                <input type="number" id="brVal" value="0">
+            </div>
+
+            <label>Contrast:</label>
+            <div class="controls-row">
+                <input type="range" id="contrast" min="-100" max="100" value="0">
+                <input type="number" id="coVal" value="0">
+            </div>
+
+            <label>Saturation:</label>
+            <div class="controls-row">
+                <input type="range" id="saturation" min="-100" max="100" value="0">
+                <input type="number" id="saVal" value="0">
+            </div>
+
+            <label>Sharpen (Structure):</label>
+            <div class="controls-row">
+                <input type="range" id="sharpen" min="0" max="100" value="0">
+                <input type="number" id="shVal" value="0">
+            </div>
+
+            
+        </div>
+
+        <div class="panel canvas-container">
+            
+            <div class="canvas-wrapper" style="width:100%; max-width: 200px;">
+                <div class="canvas-title">3. Export (Standard)</div>
+                <canvas id="outCanvas" width="200" height="228"></canvas>
+                <!-- Tlačítko pro odeslání do hodinek -->
+                <button id="sendToWatchBtn" style="margin-top: 10px; background: var(--accent);">Send to watch</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="palettes">
+        <img id="img-defined" src="defined.png" alt="Defined">
+        <img id="img-sun" src="sun.png" alt="Sun">
+    </div>
+
+    <div id="status" style="text-align: center; margin-top: 10px; color: #aaa;"></div>
+
+    <script>
+        const cropCanvas = document.getElementById('cropCanvas');
+        const cropCtx = cropCanvas.getContext('2d', { willReadFrequently: true });
+        
+        const outCanvas = document.getElementById('outCanvas');
+        const outCtx = outCanvas.getContext('2d');
+
+        const sunCanvas = document.getElementById('sunCanvas');
+        const sunCtx = sunCanvas.getContext('2d');
+
+        let sourceImg = null;
+        let imgX = 0, imgY = 0, imgScale = 1;
+        let isDragging = false, startX, startY;
+
+        const palettesData = { defined: [], sun: [] };
+
+        function loadPalette(imgId, array) {
+            const img = document.getElementById(imgId);
+            if (!img.complete || img.naturalHeight === 0) return;
+            const tmpCanvas = document.createElement('canvas');
+            tmpCanvas.width = 8; tmpCanvas.height = 8;
+            const ctx = tmpCanvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, 8, 8);
+            const data = ctx.getImageData(0, 0, 8, 8).data;
+            for (let i = 0; i < data.length; i += 4) {
+                array.push({ r: data[i], g: data[i+1], b: data[i+2] });
+            }
+        }
+
+        window.onload = () => {
+            loadPalette('img-defined', palettesData.defined);
+            loadPalette('img-sun', palettesData.sun);
+            drawCropCanvas();
+        };
+
+        // Sjednocená funkce pro zpracování načteného obrázku (ze souboru i z URL)
+        function handleImageLoad(image) {
+            sourceImg = image;
+            // 1. Zjištění výchozího měřítka (aby obrázek vyplnil celé plátno 200x228)
+            const scaleX = 200 / sourceImg.width;
+            const scaleY = 228 / sourceImg.height;
+            const baseScale = Math.max(scaleX, scaleY);
+
+            // 2. Dynamické nastavení šoupátka podle velikosti konkrétní fotky
+            const zoomSlider = document.getElementById('zoom');
+            zoomSlider.min = baseScale; // Nedovolíme odzoomovat víc, než je okraj plátna (žádné černé pruhy)
+            zoomSlider.max = baseScale * 5; // Povolíme maximální přiblížení na 5x násobek základu
+            zoomSlider.step = (zoomSlider.max - zoomSlider.min) / 100; // Rozdělíme dráhu na 100 plynulých kroků
+            
+            // 3. Aplikace hodnot
+            imgScale = baseScale;
+            zoomSlider.value = imgScale;
+
+            // 4. Vycentrování obrázku
+            imgX = (200 - sourceImg.width * imgScale) / 2;
+            imgY = (228 - sourceImg.height * imgScale) / 2;
+
+            drawCropCanvas();
+            autoAdjust();
+        }
+
+        document.getElementById('upload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = () => handleImageLoad(img);
+                img.src = event.target.result;
+            }
+            reader.readAsDataURL(file);
+        });
+
+        document.getElementById('image-url').addEventListener('input', function(e) {
+            if (e.target.value.startsWith('http')) {
+                const img = new Image();
+                img.crossOrigin = 'anonymous'; // Nutné pro načítání obrázků z jiných domén
+                img.onload = () => handleImageLoad(img);
+                img.onerror = () => { document.getElementById('status').textContent = 'Chyba: Nelze načíst obrázek z dané URL.'; };
+                img.src = e.target.value;
+            }
+        });
+
+        function drawCropCanvas() {
+            cropCtx.fillStyle = '#000';
+            cropCtx.fillRect(0, 0, 200, 228);
+            if (sourceImg) {
+                cropCtx.drawImage(sourceImg, imgX, imgY, sourceImg.width * imgScale, sourceImg.height * imgScale);
+            }
+        }
+
+        function getScaleRatio() {
+            const rect = cropCanvas.getBoundingClientRect();
+            return cropCanvas.width / rect.width;
+        }
+
+        function startDrag(e) {
+            if (!sourceImg) return;
+            isDragging = true;
+            const pos = e.touches ? e.touches[0] : e;
+            const ratio = getScaleRatio();
+            startX = (pos.clientX * ratio) - imgX;
+            startY = (pos.clientY * ratio) - imgY;
+        }
+
+        function doDrag(e) {
+            if (!isDragging || !sourceImg) return;
+            e.preventDefault(); 
+            const pos = e.touches ? e.touches[0] : e;
+            const ratio = getScaleRatio();
+            imgX = (pos.clientX * ratio) - startX;
+            imgY = (pos.clientY * ratio) - startY;
+            drawCropCanvas();
+            processImage(); 
+        }
+
+        function endDrag() { isDragging = false; }
+
+        cropCanvas.addEventListener('mousedown', startDrag);
+        cropCanvas.addEventListener('mousemove', doDrag);
+        window.addEventListener('mouseup', endDrag);
+        cropCanvas.addEventListener('touchstart', startDrag, {passive: false});
+        cropCanvas.addEventListener('touchmove', doDrag, {passive: false});
+        window.addEventListener('touchend', endDrag);
+
+        document.getElementById('zoom').addEventListener('input', function(e) {
+            if (!sourceImg) return;
+            const oldScale = imgScale;
+            imgScale = parseFloat(this.value);
+            imgX = 100 - (100 - imgX) * (imgScale / oldScale);
+            imgY = 114 - (114 - imgY) * (imgScale / oldScale);
+            drawCropCanvas();
+            processImage(); 
+        });
+
+        const setupControl = (sliderId, inputId) => {
+            const slider = document.getElementById(sliderId);
+            const input = document.getElementById(inputId);
+            
+            slider.addEventListener('input', () => {
+                input.value = slider.value;
+                processImage();
+            });
+            
+            input.addEventListener('input', () => {
+                let val = parseFloat(input.value) || 0;
+                slider.value = val;
+                processImage();
+            });
+        };
+
+        setupControl('brightness', 'brVal');
+        setupControl('contrast', 'coVal');
+        setupControl('saturation', 'saVal');
+        setupControl('sharpen', 'shVal');
+        setupControl('gamma', 'gaVal');
+
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            ['brightness', 'contrast', 'saturation', 'sharpen'].forEach(id => document.getElementById(id).value = 0);
+            ['brVal', 'coVal', 'saVal', 'shVal'].forEach(id => document.getElementById(id).value = 0);
+            document.getElementById('gamma').value = 1;
+            document.getElementById('gaVal').value = 1;
+            processImage();
+        });
+
+        document.getElementById('autoBtn').addEventListener('click', autoAdjust);
+
+        // Auto-Fix 6.0 (Percentilová ochrana detailů)
+        function autoAdjust() {
+            if (!sourceImg) return;
+            const w = 200; const h = 228;
+            const imgData = cropCtx.getImageData(0, 0, w, h).data;
+            
+            let pixelCount = imgData.length / 4;
+            let lumArray = new Float32Array(pixelCount);
+            let sumL = 0;
+
+            for (let i = 0, p = 0; i < imgData.length; i += 4, p++) {
+                let lum = 0.2989 * imgData[i] + 0.5870 * imgData[i+1] + 0.1140 * imgData[i+2];
+                sumL += lum;
+                lumArray[p] = lum;
+            }
+            
+            let lAvg = sumL / pixelCount;
+
+            // Seřazení pixelů pro nalezení skutečného "subjektu" fotky
+            lumArray.sort();
+            
+            // Ignorujeme extrémní světla (p95) a stíny (p05)
+            let p05 = lumArray[Math.floor(pixelCount * 0.05)]; 
+            let p75 = lumArray[Math.floor(pixelCount * 0.75)]; // Typicky reprezentuje pleť/světlejší detaily
+
+            // 1. SATURACE: Držíme se tvého zjištění. Mírné potlačení barev je pro dither lepší.
+            let saTarget = -30;
+
+            // 2. JAS: Lehká korekce středu, ale ne tak agresivní
+            let brTarget = Math.round((128 - lAvg) * 0.3);
+            brTarget = Math.max(-20, Math.min(20, brTarget));
+
+            // 3. KONTRAST: Změříme "užitečný" kontrast bez extrémů
+            let currentRange = lumArray[Math.floor(pixelCount * 0.90)] - lumArray[Math.floor(pixelCount * 0.10)];
+            let coTarget = Math.round(30 - (currentRange * 0.4));
+            coTarget = Math.max(-30, Math.min(10, coTarget));
+
+            // 4. GAMMA: Klíčová oprava! 
+            // Díváme se na 75. percentil (světlejší místa, např. pleť).
+            // Pokud je pleť příliš světlá (např. nad 150), musíme Gammu zatlačit dolů (např. tvých 0.5), 
+            // aby se dostala do středních tónů bohatých na barvy.
+            let gammaTarget = 1.0;
+            if (p75 > 150) {
+                // Čím jasnější pleť, tím víc tlačíme Gammu dolů k 0.5
+                gammaTarget = Math.max(0.5, 1.0 - ((p75 - 150) * 0.01));
+            } else if (p75 < 100) {
+                // Jen pokud jsou i světlá místa extrémně tmavá, lehce zesvětlíme
+                gammaTarget = 1.1; 
+            } else {
+                gammaTarget = 0.9;
+            }
+
+            let shTarget = 25; // Ponecháme hranovou ostrost
+
+            // Zápis do UI
+            document.getElementById('brightness').value = brTarget;
+            document.getElementById('brVal').value = brTarget;
+            
+            document.getElementById('contrast').value = coTarget;
+            document.getElementById('coVal').value = coTarget;
+            
+            document.getElementById('gamma').value = gammaTarget.toFixed(1);
+            document.getElementById('gaVal').value = gammaTarget.toFixed(1);
+            
+            document.getElementById('sharpen').value = shTarget;
+            document.getElementById('shVal').value = shTarget;
+            
+            document.getElementById('saturation').value = saTarget;
+            document.getElementById('saVal').value = saTarget;
+
+            processImage();
+        }
+
+        function colorDistance(c1, c2) {
+            return Math.pow(c1.r - c2.r, 2) + Math.pow(c1.g - c2.g, 2) + Math.pow(c1.b - c2.b, 2);
+        }
+
+        function findClosestColorIndex(r, g, b, palette) {
+            let minDiv = Infinity;
+            let matchIndex = 0;
+            const target = { r, g, b };
+            for (let i = 0; i < palette.length; i++) {
+                let div = colorDistance(target, palette[i]);
+                if (div < minDiv) {
+                    minDiv = div;
+                    matchIndex = i;
+                }
+            }
+            return matchIndex;
+        }
+
+        function processImage() {
+            const refPalette = palettesData['sun'];
+            if (!sourceImg || refPalette.length === 0) return;
+            
+            const w = 200; const h = 228;
+            const imgData = cropCtx.getImageData(0, 0, w, h);
+            const data = imgData.data;
+            const floatData = new Float32Array(w * h * 3);
+
+            let br = parseInt(document.getElementById('brightness').value);
+            let co = parseInt(document.getElementById('contrast').value);
+            let sa = parseInt(document.getElementById('saturation').value);
+            let sh = parseInt(document.getElementById('sharpen').value) / 100;
+            let ga = parseFloat(document.getElementById('gamma').value);
+            
+            let factor = (259 * (co + 255)) / (255 * (259 - co));
+            let satMult = 1 + (sa / 100);
+            let invGamma = 1 / ga;
+
+            let sharpenedData = new Uint8ClampedArray(data.length);
+            if (sh > 0) {
+                let centerWeight = 1 + 4 * sh;
+                let edgeWeight = -sh;
+                for (let y = 0; y < h; y++) {
+                    for (let x = 0; x < w; x++) {
+                        let idx = (y * w + x) * 4;
+                        if (y === 0 || y === h - 1 || x === 0 || x === w - 1) {
+                            sharpenedData[idx] = data[idx];
+                            sharpenedData[idx+1] = data[idx+1];
+                            sharpenedData[idx+2] = data[idx+2];
+                        } else {
+                            for (let c = 0; c < 3; c++) {
+                                let val = data[idx + c] * centerWeight
+                                        + data[idx - 4 + c] * edgeWeight
+                                        + data[idx + 4 + c] * edgeWeight
+                                        + data[(idx - w * 4) + c] * edgeWeight
+                                        + data[(idx + w * 4) + c] * edgeWeight;
+                                sharpenedData[idx + c] = Math.min(255, Math.max(0, val));
+                            }
+                        }
+                    }
+                }
+            } else {
+                sharpenedData.set(data);
+            }
+
+            for (let i = 0, j = 0; i < sharpenedData.length; i += 4, j += 3) {
+                let srcR = sharpenedData[i];
+                let srcG = sharpenedData[i+1];
+                let srcB = sharpenedData[i+2];
+
+                if (ga !== 1) {
+                    srcR = 255 * Math.pow(srcR / 255, invGamma);
+                    srcG = 255 * Math.pow(srcG / 255, invGamma);
+                    srcB = 255 * Math.pow(srcB / 255, invGamma);
+                }
+
+                let r = factor * (srcR - 128) + 128 + br;
+                let g = factor * (srcG - 128) + 128 + br;
+                let b = factor * (srcB - 128) + 128 + br;
+
+                let lum = 0.2989 * r + 0.5870 * g + 0.1140 * b;
+                r = lum + satMult * (r - lum);
+                g = lum + satMult * (g - lum);
+                b = lum + satMult * (b - lum);
+
+                floatData[j] = Math.max(0, Math.min(255, r));
+                floatData[j+1] = Math.max(0, Math.min(255, g));
+                floatData[j+2] = Math.max(0, Math.min(255, b));
+            }
+
+            const outData = outCtx.createImageData(w, h);
+            const sunData = sunCtx.createImageData(w, h);
+            
+            for (let y = 0; y < h; y++) {
+                for (let x = 0; x < w; x++) {
+                    let idx = (y * w + x) * 3;
+                    let outIdx = (y * w + x) * 4;
+
+                    let oldR = floatData[idx];
+                    let oldG = floatData[idx+1];
+                    let oldB = floatData[idx+2];
+
+                    let finalIndex = findClosestColorIndex(oldR, oldG, oldB, refPalette);
+                    let mappedColor = refPalette[finalIndex];
+
+                    let errR = oldR - mappedColor.r;
+                    let errG = oldG - mappedColor.g;
+                    let errB = oldB - mappedColor.b;
+
+                    const distribute = (dx, dy) => {
+                        let nx = x + dx, ny = y + dy;
+                        if (nx >= 0 && nx < w && ny < h) {
+                            let nIdx = (ny * w + nx) * 3;
+                            floatData[nIdx] += errR / 8;
+                            floatData[nIdx+1] += errG / 8;
+                            floatData[nIdx+2] += errB / 8;
+                        }
+                    };
+                    
+                    distribute(1, 0); distribute(2, 0);
+                    distribute(-1, 1); distribute(0, 1); distribute(1, 1);
+                    distribute(0, 2);
+
+                    let finalPebbleColor = palettesData.defined[finalIndex];
+                    outData.data[outIdx] = finalPebbleColor.r;
+                    outData.data[outIdx+1] = finalPebbleColor.g;
+                    outData.data[outIdx+2] = finalPebbleColor.b;
+                    outData.data[outIdx+3] = 255;
+
+                    let previewSunColor = refPalette[finalIndex];
+                    sunData.data[outIdx] = previewSunColor.r;
+                    sunData.data[outIdx+1] = previewSunColor.g;
+                    sunData.data[outIdx+2] = previewSunColor.b;
+                    sunData.data[outIdx+3] = 255;
+                }
+            }
+            outCtx.putImageData(outData, 0, 0);
+            sunCtx.putImageData(sunData, 0, 0);
+        }
+
+        // --- Funkcionalita pro odeslání do hodinek (z photowatch.html) ---
+
+        // Funkce pro převedení ArrayBuffer na Base64 string
+        function bufferToBase64(buffer) {
+            let binary = '';
+            const bytes = new Uint8Array(buffer);
+            const len = bytes.byteLength;
+            for (let i = 0; i < len; i++) {
+                binary += String.fromCharCode(bytes[i]);
+            }
+            return window.btoa(binary);
+        }
+
+        document.getElementById('sendToWatchBtn').addEventListener('click', () => {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = 'Připravuji data pro odeslání...';
+
+            // 1. Získáme data z finálního plátna 'outCanvas'
+            const outImageData = outCtx.getImageData(0, 0, 200, 228);
+            const rgbaBuffer = outImageData.data.buffer;
+
+            if (!rgbaBuffer || rgbaBuffer.byteLength === 0) {
+                statusEl.textContent = 'Chyba: Není co odeslat. Nejprve nahrajte a upravte obrázek.';
+                return;
+            }
+
+            // 2. Pomocí UPNG.js vytvoříme paletizovaný a komprimovaný PNG
+            // Použijeme 64 barev (stejně jako Pebble) pro optimální velikost
+            const finalPngData = UPNG.encode([rgbaBuffer], 200, 228, 64);
+
+            statusEl.textContent = `Data připravena. Velikost: ${finalPngData.byteLength} bajtů. Odesílám...`;
+
+            // 3. Převedeme binární data na Base64 a pošleme je
+            const settings = {
+                'png_base64': bufferToBase64(finalPngData)
+            };
+
+            // 4. Sestavíme URL a přesměrujeme, čímž se data pošlou do Pebble aplikace
+            const returnUrl = 'pebblejs://close#' + encodeURIComponent(JSON.stringify(settings));
+            document.location.href = returnUrl;
+        });
+    </script>
+</body>
+</html>
