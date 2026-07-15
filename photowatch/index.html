@@ -114,8 +114,8 @@
             <div class="canvas-wrapper" style="width:100%; max-width: 200px;">
                 <div class="canvas-title">3. Export (Standard)</div>
                 <canvas id="outCanvas" width="200" height="228"></canvas>
-                <!-- Tlačítko pro odeslání do hodinek -->
-                <button id="sendToWatchBtn" style="margin-top: 10px; background: var(--accent);">Send to watch</button>
+                <!-- Tlačítko pro odeslání do hodinek, zpočátku neaktivní -->
+                <button id="sendToWatchBtn" style="margin-top: 10px; background: var(--accent);" disabled>Send to watch</button>
             </div>
         </div>
     </div>
@@ -186,6 +186,9 @@
 
             drawCropCanvas();
             autoAdjust();
+
+            // Aktivujeme tlačítko pro odeslání
+            document.getElementById('sendToWatchBtn').disabled = false;
         }
 
         document.getElementById('upload').addEventListener('change', function(e) {
@@ -524,17 +527,18 @@
             statusEl.textContent = 'Připravuji data pro odeslání...';
 
             // 1. Získáme data z finálního plátna 'outCanvas'
-            const outImageData = outCtx.getImageData(0, 0, 200, 228);
-            const rgbaBuffer = outImageData.data.buffer;
-
-            if (!rgbaBuffer || rgbaBuffer.byteLength === 0) {
+            if (!sourceImg) {
                 statusEl.textContent = 'Chyba: Není co odeslat. Nejprve nahrajte a upravte obrázek.';
                 return;
             }
+            const outImageData = outCtx.getImageData(0, 0, 200, 228);
+            // OPRAVA: Použijeme přímo .data (Uint8ClampedArray) místo .data.buffer, je to spolehlivější
+            const rgbaData = outImageData.data;
 
             // 2. Pomocí UPNG.js vytvoříme paletizovaný a komprimovaný PNG
             // Použijeme 64 barev (stejně jako Pebble) pro optimální velikost
-            const finalPngData = UPNG.encode([rgbaBuffer], 200, 228, 64);
+            // UPNG.encode očekává ArrayBuffer, takže získáme buffer z našeho Uint8ClampedArray
+            const finalPngData = UPNG.encode([rgbaData.buffer], 200, 228, 64);
 
             statusEl.textContent = `Data připravena. Velikost: ${finalPngData.byteLength} bajtů. Odesílám...`;
 
