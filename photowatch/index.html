@@ -1,7 +1,6 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PhotoWatch configuration</title>
     <style>
@@ -28,17 +27,14 @@
 
         .canvas-container { display: flex; flex-direction: column; align-items: center; gap: 15px; }
         
-        /* Nové rozložení vedle sebe pro originál a náhled */
         .side-by-side { display: flex; width: 100%; gap: 10px; justify-content: center; }
         .canvas-wrapper { text-align: center; flex: 1; min-width: 0; display: flex; flex-direction: column; }
         
         .canvas-title { font-size: 0.8rem; margin-bottom: 5px; color: #aaa; }
         canvas { border: 2px solid #444; border-radius: 4px; background: #000; touch-action: none; width: 100%; max-width: 200px; height: auto; margin: 0 auto; }
         
-        /* Zoom slider specifický styl */
         .zoom-control { margin-top: 5px; }
 
-        /* Styly pro presety */
         .presets-container { display: flex; gap: 6px; margin-top: 15px; justify-content: center; }
         .preset-slot { width: 50px; height: 57px; border: 2px solid #444; border-radius: 4px; background: #222; cursor: pointer; }
         .preset-slot:hover { border-color: var(--accent); }
@@ -48,11 +44,10 @@
         .save-preset-btn { width: 50px; background: #4a4a4a; font-size: 0.8rem; padding: 8px; border-radius: 4px; }
         .clear-preset-btn { width: 50px; background: #c0392b; color: white; font-size: 0.8rem; padding: 8px; border-radius: 4px; }
 
-        /* Styly pro sbalitelné sekce */
         .collapsible-header { background: var(--panel); padding: 15px; border-radius: 8px; cursor: pointer; user-select: none; display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
         .collapsible-header h2 { margin: 0; font-size: 1.1rem; }
         .collapsible-header .indicator { transition: transform 0.3s ease; }
-        .collapsible-content { background: var(--panel); padding: 0 15px; max-height: 2000px; /* dostatečně velká hodnota */ overflow: hidden; transition: max-height 0.5s ease, padding 0.5s ease; border-radius: 0 0 8px 8px; }
+        .collapsible-content { background: var(--panel); padding: 0 15px; max-height: 2000px; overflow: hidden; transition: max-height 0.5s ease, padding 0.5s ease; border-radius: 0 0 8px 8px; }
         .collapsible-content.collapsed { max-height: 0; padding-top: 0; padding-bottom: 0; }
         .collapsible-header.collapsed { border-radius: 8px; }
         .collapsible-header.collapsed .indicator { transform: rotate(-90deg); }
@@ -61,13 +56,16 @@
         #palettes { display: none; }
     </style>
 
-    <!-- Knihovna pro enkódování PNG, převzato z photowatch.html -->
-    <script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/upng-js@2.1.0/UPNG.js"></script>
-</head>
+    <script src="./PhotoWatch configuration_files/pako.min.js.download"></script>
+    <script src="./PhotoWatch configuration_files/UPNG.js.download"></script>
+<style>
+  .imageye-selected {
+    outline: 2px solid black !important;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5) !important;
+  }
+</style></head>
 <body>
     <div class="container">
-        <!-- Sekce 1: Výběr obrázku -->
         <div class="collapsible-section">
             <div class="collapsible-header">
                 <h2>1. Select image</h2>
@@ -76,7 +74,7 @@
             <div class="collapsible-content">
                 <label>Upload Image:</label>
                 <input type="file" id="upload" accept="image/*">
-                <label style="margin-top: 10px;">...or paste <a href="uploader.html" target="_blank">Image URL</a>:</label>
+                <label style="margin-top: 10px;">...or paste <a href="https://czmanix.github.io/tomhol-configs/photowatch/uploader.html" target="_blank">Image URL</a>:</label>
                 <input type="text" id="image-url" placeholder="https://i.imgur.com/your-image.png" style="width: 100%; padding: 10px; margin-top: 5px; background: #333; color: white; border: 1px solid #444; border-radius: 4px; box-sizing: border-box;">
                 <div class="presets-container">
                     <canvas id="preset-0" class="preset-slot" data-slot="0" width="50" height="57"></canvas>
@@ -88,7 +86,6 @@
             </div>
         </div>
 
-        <!-- Sekce 2: Úprava obrázku -->
         <div class="collapsible-section">
             <div class="collapsible-header">
                 <h2>2. Tune image</h2>
@@ -101,7 +98,7 @@
                         <canvas id="cropCanvas" width="200" height="228"></canvas>
                         <div class="zoom-control">
                             <label style="margin-top:0;">Zoom:</label>
-                            <input type="range" id="zoom" min="0.1" max="3" step="0.01" value="1" style="width:90%;accent-color: var(--accent);">
+                            <input type="range" id="zoom" min="0.31666666666666665" max="1.5833333333333333" step="0.012666666666666666" value="1" style="width:90%;accent-color: var(--accent);">
                         </div>
                     </div>
                     <div class="canvas-wrapper">
@@ -145,7 +142,6 @@
             </div>
         </div>
 
-        <!-- Sekce 3: Export -->
         <div class="collapsible-section">
             <div class="collapsible-header">
                 <h2>3. Export image</h2>
@@ -183,7 +179,7 @@
                     <div class="canvas-wrapper" style="width:100%; max-width: 200px;">
                         <div class="canvas-title">Export (Standard)</div>
                         <canvas id="outCanvas" width="200" height="228"></canvas>
-                        <button id="sendToWatchBtn" style="margin-top: 10px; background: var(--accent);" disabled>Send to watch</button>
+                        <button id="sendToWatchBtn" style="margin-top: 10px; background: var(--accent);">Send to watch</button>
                     </div>
                 </div>
             </div>
@@ -192,8 +188,8 @@
     </div>
 
     <div id="palettes">
-        <img id="img-defined" src="defined.png" alt="Defined">
-        <img id="img-sun" src="sun.png" alt="Sun">
+        <img id="img-defined" src="./PhotoWatch configuration_files/defined.png" alt="Defined">
+        <img id="img-sun" src="./PhotoWatch configuration_files/sun.png" alt="Sun">
     </div>
 
     <div id="status" style="text-align: center; margin-top: 10px; color: #aaa;"></div>
@@ -214,87 +210,76 @@
 
         const palettesData = { defined: [], sun: [] };
 
-        // --- FINÁLNÍ OPRAVA PŘESNOSTI BAREV ---
-        // Problém: Načítání palet z PNG přes canvas způsobovalo drobné barevné posuny kvůli color managementu prohlížeče.
-        // Řešení: Definujeme palety natvrdo v kódu, abychom zaručili 100% přesné RGB hodnoty (0, 85, 170, 255).
         function generateHardcodedPalettes() {
-            // --- DEFINITIVNÍ OPRAVA ---
-            // Palety jsou natvrdo definované jako kompletní lookup tabulky.
-            // Pořadí odpovídá indexaci Pebble (GBR), hodnoty jsou z `defined.png` a `sun.png`.
             palettesData.defined = [
-    {r:0,g:0,b:0}     , {r:0,g:0,b:85}    , {r:0,g:0,b:170}   , {r:85,g:0,b:0},
-    {r:0,g:0,b:255}   , {r:85,g:0,b:85}   , {r:85,g:0,b:170}  , {r:0,g:85,b:0},
-    {r:170,g:0,b:85}  , {r:0,g:85,b:170}  , {r:170,g:0,b:170} , {r:85,g:85,b:0},
-    {r:255,g:0,b:0}   , {r:0,g:85,b:255}  , {r:170,g:0,b:255} , {r:85,g:85,b:85},
-    {r:0,g:170,b:0}   , {r:170,g:85,b:0}  , {r:85,g:85,b:255} , {r:255,g:0,b:255},
-    {r:0,g:170,b:85}  , {r:170,g:85,b:85} , {r:0,g:170,b:170} , {r:170,g:85,b:170},
-    {r:170,g:85,b:255}, {r:85,g:170,b:85} , {r:255,g:85,b:85} , {r:85,g:170,b:170},
-    {r:255,g:85,b:170}, {r:0,g:255,b:0}   , {r:170,g:170,b:0} , {r:85,g:170,b:255},
-    {r:0,g:255,b:170} , {r:170,g:170,b:170}, {r:85,g:255,b:0}  , {r:255,g:170,b:0},
-    {r:0,g:255,b:255} , {r:170,g:170,b:255}, {r:85,g:255,b:85} , {r:255,g:170,b:85},
-    {r:85,g:255,b:255}, {r:255,g:170,b:255}, {r:170,g:255,b:85}, {r:170,g:255,b:170},
-    {r:255,g:255,b:0} , {r:170,g:255,b:255}, {r:255,g:255,b:85}, {r:255,g:255,b:170},
-    {r:170,g:255,b:0} , {r:170,g:170,b:85}, {r:255,g:255,b:255}, {r:85,g:255,b:170},
-    {r:255,g:85,b:255}, {r:85,g:170,b:0}  , {r:255,g:0,b:85}  , {r:170,g:0,b:0},
-    {r:0,g:170,b:255} , {r:255,g:0,b:170} , {r:0,g:85,b:85}   , {r:255,g:170,b:170},
-    {r:0,g:255,b:85}  , {r:255,g:85,b:0}  , {r:85,g:85,b:170} , {r:85,g:0,b:255} // Chyba byla zde, paleta sun byla špatně zkopírovaná
-];
-palettesData.sun = [
-    {r:39,g:32,b:32}  , {r:38,g:52,b:74}  , {r:27,g:65,b:104} , {r:91,g:36,b:35},
-    {r:3,g:72,b:122}  , {r:88,g:52,b:71}  , {r:86,g:69,b:99}  , {r:63,g:73,b:50},
-    {r:136,g:63,b:81} , {r:62,g:108,b:128}, {r:136,g:80,b:112}, {r:108,g:82,b:62},
-    {r:158,g:45,b:50} , {r:44,g:111,b:141}, {r:131,g:89,b:128}, {r:103,g:91,b:90},
-    {r:87,g:109,b:69} , {r:156,g:95,b:80} , {r:108,g:117,b:140}, {r:163,g:95,b:132},
-    {r:82,g:123,b:105}, {r:146,g:99,b:97} , {r:83,g:132,b:134}, {r:141,g:107,b:118},
-    {r:149,g:123,b:142}, {r:128,g:130,b:113}, {r:169,g:104,b:103}, {r:122,g:138,b:138},
-    {r:174,g:111,b:124}, {r:97,g:134,b:91} , {r:157,g:121,b:92}, {r:114,g:136,b:148},
-    {r:95,g:154,b:143}, {r:151,g:141,b:136}, {r:139,g:144,b:107}, {r:186,g:130,b:100},
-    {r:101,g:163,b:162}, {r:151,g:141,b:136}, {r:131,g:141,b:122}, {r:181,g:135,b:117},
-    {r:137,g:163,b:158}, {r:184,g:157,b:148}, {r:162,g:139,b:119}, {r:167,g:164,b:155},
-    {r:194,g:151,b:116}, {r:167,g:164,b:155}, {r:185,g:154,b:131}, {r:184,g:157,b:148},
-    {r:175,g:145,b:107}, {r:162,g:139,b:119}, {r:188,g:169,b:166}, {r:133,g:155,b:141},
-    {r:170,g:124,b:145}, {r:126,g:117,b:84}, {r:158,g:66,b:83} , {r:128,g:40,b:44},
-    {r:79,g:142,b:155}, {r:164,g:86,b:117}, {r:65,g:92,b:95}  , {r:182,g:145,b:141},
-    {r:98,g:145,b:120}, {r:174,g:91,b:75} , {r:107,g:107,b:120}, {r:85,g:83,b:125}
-];
+                {r:0,g:0,b:0}     , {r:0,g:0,b:85}    , {r:0,g:0,b:170}   , {r:85,g:0,b:0},
+                {r:0,g:0,b:255}   , {r:85,g:0,b:85}   , {r:85,g:0,b:170}  , {r:0,g:85,b:0},
+                {r:170,g:0,b:85}  , {r:0,g:85,b:170}  , {r:170,g:0,b:170} , {r:85,g:85,b:0},
+                {r:255,g:0,b:0}   , {r:0,g:85,b:255}  , {r:170,g:0,b:255} , {r:85,g:85,b:85},
+                {r:0,g:170,b:0}   , {r:170,g:85,b:0}  , {r:85,g:85,b:255} , {r:255,g:0,b:255},
+                {r:0,g:170,b:85}  , {r:170,g:85,b:85} , {r:0,g:170,b:170} , {r:170,g:85,b:170},
+                {r:170,g:85,b:255}, {r:85,g:170,b:85} , {r:255,g:85,b:85} , {r:85,g:170,b:170},
+                {r:255,g:85,b:170}, {r:0,g:255,b:0}   , {r:170,g:170,b:0} , {r:85,g:170,b:255},
+                {r:0,g:255,b:170} , {r:170,g:170,b:170}, {r:85,g:255,b:0}  , {r:255,g:170,b:0},
+                {r:0,g:255,b:255} , {r:170,g:170,b:255}, {r:85,g:255,b:85} , {r:255,g:170,b:85},
+                {r:85,g:255,b:255}, {r:255,g:170,b:255}, {r:170,g:255,b:85}, {r:170,g:255,b:170},
+                {r:255,g:255,b:0} , {r:170,g:255,b:255}, {r:255,g:255,b:85}, {r:255,g:255,b:170},
+                {r:170,g:255,b:0} , {r:170,g:170,b:85}, {r:255,g:255,b:255}, {r:85,g:255,b:170},
+                {r:255,g:85,b:255}, {r:85,g:170,b:0}  , {r:255,g:0,b:85}  , {r:170,g:0,b:0},
+                {r:0,g:170,b:255} , {r:255,g:0,b:170} , {r:0,g:85,b:85}   , {r:255,g:170,b:170},
+                {r:0,g:255,b:85}  , {r:255,g:85,b:0}  , {r:85,g:85,b:170} , {r:85,g:0,b:255}
+            ];
+            palettesData.sun = [
+                {r:39,g:32,b:32}  , {r:38,g:52,b:74}  , {r:27,g:65,b:104} , {r:91,g:36,b:35},
+                {r:3,g:72,b:122}  , {r:88,g:52,b:71}  , {r:86,g:69,b:99}  , {r:63,g:73,b:50},
+                {r:136,g:63,b:81} , {r:62,g:108,b:128}, {r:136,g:80,b:112}, {r:108,g:82,b:62},
+                {r:158,g:45,b:50} , {r:44,g:111,b:141}, {r:131,g:89,b:128}, {r:103,g:91,b:90},
+                {r:87,g:109,b:69} , {r:156,g:95,b:80} , {r:108,g:117,b:140}, {r:163,g:95,b:132},
+                {r:82,g:123,b:105}, {r:146,g:99,b:97} , {r:83,g:132,b:134}, {r:141,g:107,b:118},
+                {r:149,g:123,b:142}, {r:128,g:130,b:113}, {r:169,g:104,b:103}, {r:122,g:138,b:138},
+                {r:174,g:111,b:124}, {r:97,g:134,b:91} , {r:157,g:121,b:92}, {r:114,g:136,b:148},
+                {r:95,g:154,b:143}, {r:151,g:141,b:136}, {r:139,g:144,b:107}, {r:186,g:130,b:100},
+                {r:101,g:163,b:162}, {r:151,g:141,b:136}, {r:131,g:141,b:122}, {r:181,g:135,b:117},
+                {r:137,g:163,b:158}, {r:184,g:157,b:148}, {r:162,g:139,b:119}, {r:167,g:164,b:155},
+                {r:194,g:151,b:116}, {r:167,g:164,b:155}, {r:185,g:154,b:131}, {r:184,g:157,b:148},
+                {r:175,g:145,b:107}, {r:162,g:139,b:119}, {r:188,g:169,b:166}, {r:133,g:155,b:141},
+                {r:170,g:124,b:145}, {r:126,g:117,b:84}, {r:158,g:66,b:83} , {r:128,g:40,b:44},
+                {r:79,g:142,b:155}, {r:164,g:86,b:117}, {r:65,g:92,b:95}  , {r:182,g:145,b:141},
+                {r:98,g:145,b:120}, {r:174,g:91,b:75} , {r:107,g:107,b:120}, {r:85,g:83,b:125}
+            ];
         }
 
         window.onload = () => {
-            // Nahradíme původní načítání z obrázků
             generateHardcodedPalettes();
-
             drawCropCanvas();
-
-            // Načteme uložené presety při startu
             initPresets();
         };
 
-        // Sjednocená funkce pro zpracování načteného obrázku (ze souboru i z URL)
         function handleImageLoad(image) {
             sourceImg = image;
-            // 1. Zjištění výchozího měřítka (aby obrázek vyplnil celé plátno 200x228)
             const scaleX = 200 / sourceImg.width;
             const scaleY = 228 / sourceImg.height;
             const baseScale = Math.max(scaleX, scaleY);
 
-            // 2. Dynamické nastavení šoupátka podle velikosti konkrétní fotky
             const zoomSlider = document.getElementById('zoom');
-            zoomSlider.min = baseScale; // Nedovolíme odzoomovat víc, než je okraj plátna (žádné černé pruhy)
-            zoomSlider.max = baseScale * 5; // Povolíme maximální přiblížení na 5x násobek základu
-            zoomSlider.step = (zoomSlider.max - zoomSlider.min) / 100; // Rozdělíme dráhu na 100 plynulých kroků
+            zoomSlider.min = baseScale;
+            zoomSlider.max = baseScale * 5;
+            zoomSlider.step = (zoomSlider.max - zoomSlider.min) / 100;
             
-            // 3. Aplikace hodnot
             imgScale = baseScale;
             zoomSlider.value = imgScale;
 
-            // 4. Vycentrování obrázku
             imgX = (200 - sourceImg.width * imgScale) / 2;
             imgY = (228 - sourceImg.height * imgScale) / 2;
 
-            drawCropCanvas();
-            autoAdjust();
+            ['brightness', 'contrast', 'saturation', 'sharpen'].forEach(id => document.getElementById(id).value = 0);
+            ['brVal', 'coVal', 'saVal', 'shVal'].forEach(id => document.getElementById(id).value = 0);
+            document.getElementById('gamma').value = 1;
+            document.getElementById('gaVal').value = 1;
 
-            // Aktivujeme tlačítko pro odeslání
+            drawCropCanvas();
+            processImage();
+
             document.getElementById('sendToWatchBtn').disabled = false;
         }
 
@@ -313,7 +298,7 @@ palettesData.sun = [
         document.getElementById('image-url').addEventListener('input', function(e) {
             if (e.target.value.startsWith('http')) {
                 const img = new Image();
-                img.crossOrigin = 'anonymous'; // Nutné pro načítání obrázků z jiných domén
+                img.crossOrigin = 'anonymous';
                 img.onload = () => handleImageLoad(img);
                 img.onerror = () => { document.getElementById('status').textContent = 'Chyba: Nelze načíst obrázek z dané URL.'; };
                 img.src = e.target.value;
@@ -404,7 +389,6 @@ palettesData.sun = [
 
         document.getElementById('autoBtn').addEventListener('click', autoAdjust);
 
-        // Auto-Fix 6.0 (Percentilová ochrana detailů)
         function autoAdjust() {
             if (!sourceImg) return;
             const w = 200; const h = 228;
@@ -420,57 +404,37 @@ palettesData.sun = [
                 lumArray[p] = lum;
             }
             
+            lumArray.sort();
+            let p05 = lumArray[Math.floor(pixelCount * 0.05)]; 
+            let p75 = lumArray[Math.floor(pixelCount * 0.75)];
+            let p95 = lumArray[Math.floor(pixelCount * 0.95)];
             let lAvg = sumL / pixelCount;
 
-            // Seřazení pixelů pro nalezení skutečného "subjektu" fotky
-            lumArray.sort();
-            
-            // Ignorujeme extrémní světla (p95) a stíny (p05)
-            let p05 = lumArray[Math.floor(pixelCount * 0.05)]; 
-            let p75 = lumArray[Math.floor(pixelCount * 0.75)]; // Typicky reprezentuje pleť/světlejší detaily
+            let saTarget = -20;
+            let currentRange = p95 - p05;
+            let coTarget = Math.round(25 - (currentRange * 0.3));
+            coTarget = Math.max(-15, Math.min(20, coTarget));
 
-            // 1. SATURACE: Držíme se tvého zjištění. Mírné potlačení barev je pro dither lepší.
-            let saTarget = -30;
+            let brTarget = Math.round((128 - lAvg) * 0.25);
+            brTarget = Math.max(-15, Math.min(15, brTarget));
 
-            // 2. JAS: Lehká korekce středu, ale ne tak agresivní
-            let brTarget = Math.round((128 - lAvg) * 0.3);
-            brTarget = Math.max(-20, Math.min(20, brTarget));
-
-            // 3. KONTRAST: Změříme "užitečný" kontrast bez extrémů
-            let currentRange = lumArray[Math.floor(pixelCount * 0.90)] - lumArray[Math.floor(pixelCount * 0.10)];
-            let coTarget = Math.round(30 - (currentRange * 0.4));
-            coTarget = Math.max(-30, Math.min(10, coTarget));
-
-            // 4. GAMMA: Klíčová oprava! 
-            // Díváme se na 75. percentil (světlejší místa, např. pleť).
-            // Pokud je pleť příliš světlá (např. nad 150), musíme Gammu zatlačit dolů (např. tvých 0.5), 
-            // aby se dostala do středních tónů bohatých na barvy.
             let gammaTarget = 1.0;
-            if (p75 > 150) {
-                // Čím jasnější pleť, tím víc tlačíme Gammu dolů k 0.5
-                gammaTarget = Math.max(0.5, 1.0 - ((p75 - 150) * 0.01));
-            } else if (p75 < 100) {
-                // Jen pokud jsou i světlá místa extrémně tmavá, lehce zesvětlíme
-                gammaTarget = 1.1; 
-            } else {
-                gammaTarget = 0.9;
+            if (p75 > 160) {
+                gammaTarget = Math.max(0.6, 1.0 - ((p75 - 160) * 0.008));
+            } else if (p75 < 130) {
+                gammaTarget = Math.min(1.4, 1.0 + ((130 - p75) * 0.008));
             }
 
-            let shTarget = 25; // Ponecháme hranovou ostrost
+            let shTarget = 20;
 
-            // Zápis do UI
             document.getElementById('brightness').value = brTarget;
             document.getElementById('brVal').value = brTarget;
-            
             document.getElementById('contrast').value = coTarget;
             document.getElementById('coVal').value = coTarget;
-            
             document.getElementById('gamma').value = gammaTarget.toFixed(1);
             document.getElementById('gaVal').value = gammaTarget.toFixed(1);
-            
             document.getElementById('sharpen').value = shTarget;
             document.getElementById('shVal').value = shTarget;
-            
             document.getElementById('saturation').value = saTarget;
             document.getElementById('saVal').value = saTarget;
 
@@ -495,21 +459,78 @@ palettesData.sun = [
             return matchIndex;
         }
 
+        function renderToCanvases(pixelData, w, h, useDithering) {
+            const isFloat = pixelData instanceof Float32Array;
+            const workData = isFloat ? pixelData.slice() : new Float32Array(w * h * 3);
+            
+            if (!isFloat) {
+                for (let i = 0, j = 0; i < pixelData.length; i += 4, j += 3) {
+                    workData[j] = pixelData[i];
+                    workData[j+1] = pixelData[i+1];
+                    workData[j+2] = pixelData[i+2];
+                }
+            }
+
+            const outData = outCtx.createImageData(w, h);
+            const sunData = sunCtx.createImageData(w, h);
+
+            const targetPalette = useDithering ? palettesData.sun : palettesData.defined;
+
+            for (let y = 0; y < h; y++) {
+                for (let x = 0; x < w; x++) {
+                    let idx = (y * w + x) * 3;
+                    let outIdx = (y * w + x) * 4;
+
+                    let r = workData[idx], g = workData[idx+1], b = workData[idx+2];
+                    
+                    let bestIndex = findClosestColorIndex(r, g, b, targetPalette);
+                    
+                    let sunColor = palettesData.sun[bestIndex];
+                    let definedColor = palettesData.defined[bestIndex];
+
+                    sunData.data.set([sunColor.r, sunColor.g, sunColor.b, 255], outIdx);
+                    outData.data.set([definedColor.r, definedColor.g, definedColor.b, 255], outIdx);
+
+                    if (useDithering) {
+                        let matchColor = targetPalette[bestIndex];
+                        let errR = r - matchColor.r;
+                        let errG = g - matchColor.g;
+                        let errB = b - matchColor.b;
+
+                        const distribute = (dx, dy) => {
+                            let nx = x + dx, ny = y + dy;
+                            if (nx >= 0 && nx < w && ny < h) {
+                                let nIdx = (ny * w + nx) * 3;
+                                workData[nIdx]   += errR * 0.125;
+                                workData[nIdx+1] += errG * 0.125;
+                                workData[nIdx+2] += errB * 0.125;
+                            }
+                        };
+                        distribute(1, 0);
+                        distribute(2, 0);
+                        distribute(-1, 1);
+                        distribute(0, 1);
+                        distribute(1, 1);
+                        distribute(0, 2);
+                    }
+                }
+            }
+
+            outCanvas.finalImageData = outData;
+            outCtx.putImageData(outData, 0, 0);
+            sunCtx.putImageData(sunData, 0, 0);
+        }
+
         function processImage() {
-            // Vždy používáme 'sun' paletu pro referenční náhled
             if (!sourceImg || palettesData.sun.length === 0) return;
             
-            // --- NOVÉ: Bypass pro předem ditherované obrázky ---
             const bypassCheckbox = document.getElementById('bypass');
             if (bypassCheckbox.checked) {
                 const w = 200; const h = 228;
                 const imgData = cropCtx.getImageData(0, 0, w, h);
-                // Jednoduše zkopírujeme oříznutý obrázek do obou náhledů bez jakékoliv změny
-                outCtx.putImageData(imgData, 0, 0);
-                sunCtx.putImageData(imgData, 0, 0);
-                return; // Ukončíme funkci zde
+                renderToCanvases(imgData.data, w, h, false);
+                return;
             }
-            // --- KONEC NOVÉ ČÁSTI ---
 
             let br = parseInt(document.getElementById('brightness').value);
             let co = parseInt(document.getElementById('contrast').value);
@@ -517,49 +538,12 @@ palettesData.sun = [
             let sh = parseInt(document.getElementById('sharpen').value);
             let ga = parseFloat(document.getElementById('gamma').value);
 
-            // --- NOVÉ: Optimalizace pro resetovaný stav ---
-            // Pokud jsou všechny posuvníky v neutrální poloze, přeskočíme složité úpravy
-            // a provedeme pouze přemapování barev 1:1 bez ditheringu.
-            const isPristine = br === 0 && co === 0 && sa === 0 && sh === 0 && ga === 1.0;
-            if (isPristine) {
-                const w = 200; const h = 228;
-                const imgData = cropCtx.getImageData(0, 0, w, h);
-                const pixelData = imgData.data;
-
-                // --- OPRAVA pro stav bez ditheringu ---
-                // Musíme ručně zpracovat oba canvasy se správnými paletami.
-                const outFinalData = outCtx.createImageData(w, h);
-                const sunFinalData = sunCtx.createImageData(w, h);
-
-                for (let i = 0; i < pixelData.length; i += 4) {
-                    const r = pixelData[i], g = pixelData[i+1], b = pixelData[i+2];
-                    const definedIndex = findClosestColorIndex(r, g, b, palettesData.defined);
-                    
-                    const definedColor = palettesData.defined[definedIndex];
-                    outFinalData.data.set([definedColor.r, definedColor.g, definedColor.b, 255], i);
-
-                    const sunColor = palettesData.sun[definedIndex];
-                    sunFinalData.data.set([sunColor.r, sunColor.g, sunColor.b, 255], i);
-                }
-                outCtx.putImageData(outFinalData, 0, 0);
-                sunCtx.putImageData(sunFinalData, 0, 0);
-                return;
-            }
-            // --- KONEC NOVÉ ČÁSTI ---
-
-
-
-
             const w = 200; const h = 228;
             const imgData = cropCtx.getImageData(0, 0, w, h);
             const data = imgData.data;
             const floatData = new Float32Array(w * h * 3);
 
-            // --- FINÁLNÍ OPRAVA PŘESNOSTI BAREV ---
-            // Pokud je kontrast 0, faktor MUSÍ být přesně 1, jinak dojde k posunu barev.
-            // Původní vzorec vracel pro co=0 hodnotu ~1.015, což způsobovalo chybu.
             let factor = (co === 0) ? 1.0 : (259 * (co + 255)) / (255 * (259 - co));
-            // Stejná optimalizace pro saturaci
             let satMult = 1 + (sa / 100);
             let invGamma = 1 / ga;
 
@@ -618,77 +602,9 @@ palettesData.sun = [
                 floatData[j+2] = Math.max(0, Math.min(255, b));
             }
 
-            // Uložíme si finální obrazová data pro export, abychom se vyhnuli čtení z canvasu
-            const outImageData = mapToPalette(floatData, w, h, true);
-            outCanvas.finalImageData = outImageData;
-            outCtx.putImageData(outImageData, 0, 0);
-
-            // KONEČNĚ SPRÁVNĚ: Přeložíme hotový exportní obrázek do sluneční palety
-            translateToSunPalette(outImageData);
+            renderToCanvases(floatData, w, h, true);
         }
 
-        function translateToSunPalette(sourceImageData) {
-            const w = sourceImageData.width;
-            const h = sourceImageData.height;
-            const sunFinalData = sunCtx.createImageData(w, h);
-
-            for (let i = 0; i < sourceImageData.data.length; i += 4) {
-                const r = sourceImageData.data[i], g = sourceImageData.data[i+1], b = sourceImageData.data[i+2];
-                const definedIndex = findClosestColorIndex(r, g, b, palettesData.defined);
-                const sunColor = palettesData.sun[definedIndex];
-                sunFinalData.data.set([sunColor.r, sunColor.g, sunColor.b, 255], i);
-            }
-            sunCtx.putImageData(sunFinalData, 0, 0);
-        }
-
-        // Nová, sjednocená funkce pro mapování na paletu (s volitelným ditheringem)
-        function mapToPalette(pixelData, w, h, useDithering) {
-            const isFloat = pixelData instanceof Float32Array;
-
-            // --- FINÁLNÍ OPRAVA: Vytvoříme si kopie dat pro každý canvas ---
-            const sunPixelData = isFloat ? pixelData.slice() : pixelData;
-            const outPixelData = isFloat ? pixelData.slice() : pixelData;
-
-            const outData = outCtx.createImageData(w, h);
-            
-            for (let y = 0; y < h; y++) {
-                for (let x = 0; x < w; x++) {
-                    let idx = (y * w + x) * 3;
-                    let outIdx = (y * w + x) * 4;
-                    let srcIdx = isFloat ? idx : outIdx;
-
-                    // --- Zpracování pro outCanvas (finální export) ---
-                    let outR = outPixelData[srcIdx], outG = outPixelData[srcIdx+1], outB = outPixelData[srcIdx+2];
-                    let outIndex = findClosestColorIndex(outR, outG, outB, palettesData.defined);
-                    let outMappedColor = palettesData.defined[outIndex];
-
-                    if (useDithering && isFloat) {
-                        let errR = outR - outMappedColor.r;
-                        let errG = outG - outMappedColor.g;
-                        let errB = outB - outMappedColor.b;
-                        const distribute = (dx, dy, data) => {
-                            let nx = x + dx, ny = y + dy;
-                            if (nx >= 0 && nx < w && ny < h) {
-                                let nIdx = (ny * w + nx) * 3;
-                                data[nIdx]   += errR / 8;
-                                data[nIdx+1] += errG / 8;
-                                data[nIdx+2] += errB / 8;
-                            }
-                        };
-                        distribute(1, 0, outPixelData); distribute(2, 0, outPixelData);
-                        distribute(-1, 1, outPixelData); distribute(0, 1, outPixelData); distribute(1, 1, outPixelData);
-                        distribute(0, 2, outPixelData);
-                    }
-                    outData.data[outIdx] = outMappedColor.r;
-                    outData.data[outIdx+1] = outMappedColor.g;
-                    outData.data[outIdx+2] = outMappedColor.b;
-                    outData.data[outIdx+3] = 255;
-                }
-            }
-            return outData;
-        }
-
-        // --- Funkcionalita pro Bypass checkbox ---
         document.getElementById('bypass').addEventListener('change', function(e) {
             const isBypassed = e.target.checked;
             const controls = ['gamma', 'gaVal', 'brightness', 'brVal', 'contrast', 'coVal', 'saturation', 'saVal', 'sharpen', 'shVal', 'autoBtn', 'resetBtn'];
@@ -699,12 +615,9 @@ palettesData.sun = [
                     el.disabled = isBypassed;
                 }
             });
-            processImage(); // Znovu zpracujeme obrázek s novým nastavením
+            processImage(); 
         });
 
-        // --- Funkcionalita pro odeslání do hodinek (z photowatch.html) ---
-
-        // Funkce pro převedení ArrayBuffer na Base64 string
         function bufferToBase64(buffer) {
             let binary = '';
             const bytes = new Uint8Array(buffer);
@@ -724,32 +637,22 @@ palettesData.sun = [
                 return;
             }
 
-            // --- FINÁLNÍ OPRAVA ---
-            // Problém: Vlastnost .buffer u ImageData.data není spolehlivě podporována na všech zařízeních.
-            // Řešení: Místo problematického .buffer předáme knihovně UPNG.js přímo pole .data (Uint8ClampedArray).
-            // Je to robustní a spolehlivý způsob.
             statusEl.textContent = 'Krok 1: Příprava finálních obrazových dat...';
             const finalImageData = outCanvas.finalImageData || outCtx.getImageData(0, 0, 200, 228);
 
             statusEl.textContent = 'Krok 2: Enkódování do formátu PNG...';
-            // --- OPRAVA: Přesnost barev v exportu ---
-            // Nastavením počtu barev na 0 říkáme UPNG.js, aby neprováděl žádnou barevnou kvantizaci (true-color PNG).
-            // Tím zajistíme, že RGB hodnoty v exportovaném PNG budou 100% shodné s naší `defined` paletou.
             const finalPngData = UPNG.encode([finalImageData.data], 200, 228, 0);
 
             statusEl.textContent = `Data připravena. Velikost: ${finalPngData.byteLength} bajtů. Odesílám...`;
 
-            // 3. Převedeme binární data na Base64 a pošleme je
             const settings = {
                 'png_base64': bufferToBase64(finalPngData)
             };
 
-            // 4. Sestavíme URL a přesměrujeme, čímž se data pošlou do Pebble aplikace
             const returnUrl = 'pebblejs://close#' + encodeURIComponent(JSON.stringify(settings));
             document.location.href = returnUrl;
         });
 
-        // --- Funkcionalita pro ukládání a načítání presetů ---
         const NUM_PRESETS = 5;
 
         function savePreset(slotIndex) {
@@ -758,7 +661,6 @@ palettesData.sun = [
                 return;
             }
 
-            // 1. Vytvoříme dočasné plátno pro vygenerování náhledu
             const tempThumbCanvas = document.createElement('canvas');
             tempThumbCanvas.width = 50;
             tempThumbCanvas.height = 57;
@@ -769,13 +671,9 @@ palettesData.sun = [
             let imageDataToSave = sourceImg.src;
             let scaleToSave = imgScale;
 
-            // --- OPRAVA: QuotaExceededError při opětovném uložení ---
-            // Problém: Opakovaná komprese již zkomprimovaného obrázku.
-            // Řešení: Komprimujeme pouze pokud zdroj NENÍ již dataURL z localStorage.
-            // Data z localStorage jsou již zkomprimovaná (image/jpeg). Původní upload je typicky image/png nebo velký jpeg.
-            if (!sourceImg.src.startsWith('data:image/jpeg')) {
-                const MAX_PRESET_DIM = 400;
-                const originalScale = imgScale;
+            const MAX_PRESET_DIM = 1400;
+            // OPRAVA NÁVRHU B: Zmenšení na 1400px + úprava měřítka a komprese
+            if (sourceImg.width > MAX_PRESET_DIM || sourceImg.height > MAX_PRESET_DIM || sourceImg.src.length > 400000) {
                 const aspect = sourceImg.width / sourceImg.height;
                 let w = sourceImg.width;
                 let h = sourceImg.height;
@@ -787,14 +685,13 @@ palettesData.sun = [
                 tempImageCanvas.width = w; tempImageCanvas.height = h;
                 const tempImageCtx = tempImageCanvas.getContext('2d');
                 tempImageCtx.drawImage(sourceImg, 0, 0, w, h);
-                imageDataToSave = tempImageCanvas.toDataURL('image/jpeg', 0.8); // JPEG komprese
+                imageDataToSave = tempImageCanvas.toDataURL('image/jpeg', 0.78); 
 
-                // OPRAVA: Přepočítáme scale pro zmenšený obrázek
-                const scaleRatio = w / sourceImg.width;
-                scaleToSave = originalScale / scaleRatio;
+                // Měřítko (scale) se musí po zmenšení zvětšit úměrně k poměru, abychom kreslili stejně velko
+                const ratio = w / sourceImg.width;
+                scaleToSave = imgScale / ratio;
             }
 
-            // 2. Sestavíme objekt s nastavením
             const presetData = {
                 imageDataUrl: imageDataToSave,
                 thumbnailDataUrl: thumbnailDataUrl,
@@ -811,27 +708,31 @@ palettesData.sun = [
                 }
             };
 
-            // 3. Uložíme do localStorage
-            localStorage.setItem(`photowatch_preset_${slotIndex}`, JSON.stringify(presetData));
-            
-            // 4. Aktualizujeme zobrazený náhled ve slotu
-            const topPresetCanvas = document.getElementById(`preset-${slotIndex}`);
-            const topPresetCtx = topPresetCanvas.getContext('2d');
-            topPresetCtx.clearRect(0, 0, 50, 57);
-            topPresetCtx.drawImage(tempThumbCanvas, 0, 0);
+            try {
+                localStorage.setItem(`photowatch_preset_${slotIndex}`, JSON.stringify(presetData));
+                
+                const topPresetCanvas = document.getElementById(`preset-${slotIndex}`);
+                const topPresetCtx = topPresetCanvas.getContext('2d');
+                topPresetCtx.clearRect(0, 0, 50, 57);
+                topPresetCtx.drawImage(tempThumbCanvas, 0, 0);
 
-            const bottomPresetCanvas = document.getElementById(`save-preset-thumb-${slotIndex}`);
-            const bottomPresetCtx = bottomPresetCanvas.getContext('2d');
-            bottomPresetCtx.clearRect(0, 0, 50, 57);
-            bottomPresetCtx.drawImage(tempThumbCanvas, 0, 0);
-            document.getElementById('status').textContent = `Konfigurace uložena do slotu ${slotIndex + 1}.`;
+                const bottomPresetCanvas = document.getElementById(`save-preset-thumb-${slotIndex}`);
+                const bottomPresetCtx = bottomPresetCanvas.getContext('2d');
+                bottomPresetCtx.clearRect(0, 0, 50, 57);
+                bottomPresetCtx.drawImage(tempThumbCanvas, 0, 0);
+                document.getElementById('status').textContent = `Konfigurace uložena do slotu ${slotIndex + 1}.`;
+            } catch (e) {
+                if (e.name === 'QuotaExceededError') {
+                    document.getElementById('status').textContent = 'Chyba: Nedostatek místa v paměti (localStorage). Smažte prosím některé presety.';
+                } else {
+                    document.getElementById('status').textContent = 'Chyba při ukládání: ' + e.message;
+                }
+            }
         }
 
         function clearPreset(slotIndex) {
-            // 1. Smažeme data z localStorage
             localStorage.removeItem(`photowatch_preset_${slotIndex}`);
 
-            // 2. Vyčistíme náhledy
             const topPresetCanvas = document.getElementById(`preset-${slotIndex}`);
             const topPresetCtx = topPresetCanvas.getContext('2d');
             topPresetCtx.clearRect(0, 0, 50, 57);
@@ -852,24 +753,32 @@ palettesData.sun = [
 
             const presetData = JSON.parse(presetJSON);
 
-            // Načteme obrázek a po načtení aplikujeme nastavení
             const img = new Image();
             img.onload = () => {
                 sourceImg = img;
 
-                // Aplikujeme uložené hodnoty
+                // 1. DŮLEŽITÉ: Přepočet limitů šoupátka Zoomu přesně pro načtený obrázek
+                const scaleX = 200 / sourceImg.width;
+                const scaleY = 228 / sourceImg.height;
+                const baseScale = Math.max(scaleX, scaleY);
+
+                const zoomSlider = document.getElementById('zoom');
+                zoomSlider.min = baseScale;
+                zoomSlider.max = baseScale * 5;
+                zoomSlider.step = (zoomSlider.max - zoomSlider.min) / 100;
+
+                // 2. Aplikace uloženého nastavení
                 const settings = presetData.settings;
                 imgScale = parseFloat(settings.imgScale);
                 imgX = parseFloat(settings.imgX);
                 imgY = parseFloat(settings.imgY);
                 
-                document.getElementById('zoom').value = imgScale;
+                zoomSlider.value = imgScale;
                 ['brightness', 'contrast', 'saturation', 'sharpen', 'gamma'].forEach(id => {
                     document.getElementById(id).value = settings[id];
                     document.getElementById(id.substring(0, 2) + 'Val').value = settings[id];
                 });
 
-                // Obnovíme stav bypass checkboxu a spustíme event pro zakázání/povolení ovládacích prvků
                 document.getElementById('bypass').checked = settings.bypass || false;
                 document.getElementById('bypass').dispatchEvent(new Event('change'));
 
@@ -888,7 +797,6 @@ palettesData.sun = [
                     const presetData = JSON.parse(presetJSON);
                     const thumb = new Image();
                     thumb.onload = () => {
-                        // Vykreslíme náhled na obou místech
                         const topPresetCanvas = document.getElementById(`preset-${i}`);
                         const topPresetCtx = topPresetCanvas.getContext('2d');
                         topPresetCtx.drawImage(thumb, 0, 0);
@@ -906,7 +814,6 @@ palettesData.sun = [
             }
         }
 
-        // --- Funkcionalita pro sbalitelné sekce ---
         document.querySelectorAll('.collapsible-header').forEach(header => {
             header.addEventListener('click', () => {
                 const content = header.nextElementSibling;
@@ -916,5 +823,5 @@ palettesData.sun = [
         });
 
     </script>
-</body>
-</html>
+
+</body></html>
