@@ -187,10 +187,7 @@
 
     </div>
 
-    <div id="palettes">
-        <img id="img-defined" src="./PhotoWatch configuration_files/defined.png" alt="Defined">
-        <img id="img-sun" src="./PhotoWatch configuration_files/sun.png" alt="Sun">
-    </div>
+
 
     <div id="status" style="text-align: center; margin-top: 10px; color: #aaa;"></div>
 
@@ -757,6 +754,11 @@
             const presetData = JSON.parse(presetJSON);
 
             const img = new Image();
+            // OPRAVA: Pokud je uložená URL (začíná na http), musíme nastavit crossOrigin,
+            // aby se canvas "neušpinil" a my mohli číst jeho data (getImageData).
+            if (presetData.imageDataUrl.startsWith('http')) {
+                img.crossOrigin = 'anonymous';
+            }
             img.onload = () => {
                 sourceImg = img;
 
