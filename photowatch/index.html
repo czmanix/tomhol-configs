@@ -711,6 +711,7 @@
                     saturation: document.getElementById('saturation').value,
                     sharpen: document.getElementById('sharpen').value,
                     gamma: document.getElementById('gamma').value,
+                    bypass: document.getElementById('bypass').checked
                 }
             };
 
@@ -771,6 +772,10 @@
                     document.getElementById(id).value = settings[id];
                     document.getElementById(id.substring(0, 2) + 'Val').value = settings[id];
                 });
+
+                // Obnovíme stav bypass checkboxu a spustíme event pro zakázání/povolení ovládacích prvků
+                document.getElementById('bypass').checked = settings.bypass || false;
+                document.getElementById('bypass').dispatchEvent(new Event('change'));
 
                 drawCropCanvas();
                 processImage();
