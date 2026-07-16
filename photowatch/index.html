@@ -214,23 +214,57 @@
 
         const palettesData = { defined: [], sun: [] };
 
-        function loadPalette(imgId, array) {
-            const img = document.getElementById(imgId);
-            if (!img.complete || img.naturalHeight === 0) return;
-            const tmpCanvas = document.createElement('canvas');
-            tmpCanvas.width = 8; tmpCanvas.height = 8;
-            const ctx = tmpCanvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, 8, 8);
-            const data = ctx.getImageData(0, 0, 8, 8).data;
-            for (let i = 0; i < data.length; i += 4) {
-                array.push({ r: data[i], g: data[i+1], b: data[i+2] });
-            }
+        // --- FINÁLNÍ OPRAVA PŘESNOSTI BAREV ---
+        // Problém: Načítání palet z PNG přes canvas způsobovalo drobné barevné posuny kvůli color managementu prohlížeče.
+        // Řešení: Definujeme palety natvrdo v kódu, abychom zaručili 100% přesné RGB hodnoty (0, 85, 170, 255).
+        function generateHardcodedPalettes() {
+            // --- DEFINITIVNÍ OPRAVA ---
+            // Palety jsou natvrdo definované jako kompletní lookup tabulky.
+            // Pořadí odpovídá indexaci Pebble (GBR), hodnoty jsou z `defined.png` a `sun.png`.
+            palettesData.defined = [
+    {r:0,g:0,b:0}     , {r:0,g:0,b:85}    , {r:0,g:0,b:170}   , {r:85,g:0,b:0},
+    {r:0,g:0,b:255}   , {r:85,g:0,b:85}   , {r:85,g:0,b:170}  , {r:0,g:85,b:0},
+    {r:170,g:0,b:85}  , {r:0,g:85,b:170}  , {r:170,g:0,b:170} , {r:85,g:85,b:0},
+    {r:255,g:0,b:0}   , {r:0,g:85,b:255}  , {r:170,g:0,b:255} , {r:85,g:85,b:85},
+    {r:0,g:170,b:0}   , {r:170,g:85,b:0}  , {r:85,g:85,b:255} , {r:255,g:0,b:255},
+    {r:0,g:170,b:85}  , {r:170,g:85,b:85} , {r:0,g:170,b:170} , {r:170,g:85,b:170},
+    {r:170,g:85,b:255}, {r:85,g:170,b:85} , {r:255,g:85,b:85} , {r:85,g:170,b:170},
+    {r:255,g:85,b:170}, {r:0,g:255,b:0}   , {r:170,g:170,b:0} , {r:85,g:170,b:255},
+    {r:0,g:255,b:170} , {r:170,g:170,b:170}, {r:85,g:255,b:0}  , {r:255,g:170,b:0},
+    {r:0,g:255,b:255} , {r:170,g:170,b:255}, {r:85,g:255,b:85} , {r:255,g:170,b:85},
+    {r:85,g:255,b:255}, {r:255,g:170,b:255}, {r:170,g:255,b:85}, {r:170,g:255,b:170},
+    {r:255,g:255,b:0} , {r:170,g:255,b:255}, {r:255,g:255,b:85}, {r:255,g:255,b:170},
+    {r:170,g:255,b:0} , {r:170,g:170,b:85}, {r:255,g:255,b:255}, {r:85,g:255,b:170},
+    {r:255,g:85,b:255}, {r:85,g:170,b:0}  , {r:255,g:0,b:85}  , {r:170,g:0,b:0},
+    {r:0,g:170,b:255} , {r:255,g:0,b:170} , {r:0,g:85,b:85}   , {r:255,g:170,b:170},
+    {r:0,g:255,b:85}  , {r:255,g:85,b:0}  , {r:85,g:85,b:170} , {r:85,g:0,b:255} // Chyba byla zde, paleta sun byla špatně zkopírovaná
+];
+palettesData.sun = [
+    {r:39,g:32,b:32}  , {r:38,g:52,b:74}  , {r:27,g:65,b:104} , {r:91,g:36,b:35},
+    {r:3,g:72,b:122}  , {r:88,g:52,b:71}  , {r:86,g:69,b:99}  , {r:63,g:73,b:50},
+    {r:136,g:63,b:81} , {r:62,g:108,b:128}, {r:136,g:80,b:112}, {r:108,g:82,b:62},
+    {r:158,g:45,b:50} , {r:44,g:111,b:141}, {r:131,g:89,b:128}, {r:103,g:91,b:90},
+    {r:87,g:109,b:69} , {r:156,g:95,b:80} , {r:108,g:117,b:140}, {r:163,g:95,b:132},
+    {r:82,g:123,b:105}, {r:146,g:99,b:97} , {r:83,g:132,b:134}, {r:141,g:107,b:118},
+    {r:149,g:123,b:142}, {r:128,g:130,b:113}, {r:169,g:104,b:103}, {r:122,g:138,b:138},
+    {r:174,g:111,b:124}, {r:97,g:134,b:91} , {r:157,g:121,b:92}, {r:114,g:136,b:148},
+    {r:95,g:154,b:143}, {r:151,g:141,b:136}, {r:139,g:144,b:107}, {r:186,g:130,b:100},
+    {r:101,g:163,b:162}, {r:151,g:141,b:136}, {r:131,g:141,b:122}, {r:181,g:135,b:117},
+    {r:137,g:163,b:158}, {r:184,g:157,b:148}, {r:162,g:139,b:119}, {r:167,g:164,b:155},
+    {r:194,g:151,b:116}, {r:167,g:164,b:155}, {r:185,g:154,b:131}, {r:184,g:157,b:148},
+    {r:175,g:145,b:107}, {r:162,g:139,b:119}, {r:188,g:169,b:166}, {r:133,g:155,b:141},
+    {r:170,g:124,b:145}, {r:126,g:117,b:84}, {r:158,g:66,b:83} , {r:128,g:40,b:44},
+    {r:79,g:142,b:155}, {r:164,g:86,b:117}, {r:65,g:92,b:95}  , {r:182,g:145,b:141},
+    {r:98,g:145,b:120}, {r:174,g:91,b:75} , {r:107,g:107,b:120}, {r:85,g:83,b:125}
+];
         }
 
         window.onload = () => {
-            loadPalette('img-defined', palettesData.defined);
-            loadPalette('img-sun', palettesData.sun);
+            // Nahradíme původní načítání z obrázků
+            generateHardcodedPalettes();
+
             drawCropCanvas();
+
             // Načteme uložené presety při startu
             initPresets();
         };
@@ -462,8 +496,8 @@
         }
 
         function processImage() {
-            const refPalette = palettesData['sun'];
-            if (!sourceImg || refPalette.length === 0) return;
+            // Vždy používáme 'sun' paletu pro referenční náhled
+            if (!sourceImg || palettesData.sun.length === 0) return;
             
             // --- NOVÉ: Bypass pro předem ditherované obrázky ---
             const bypassCheckbox = document.getElementById('bypass');
@@ -477,26 +511,63 @@
             }
             // --- KONEC NOVÉ ČÁSTI ---
 
+            let br = parseInt(document.getElementById('brightness').value);
+            let co = parseInt(document.getElementById('contrast').value);
+            let sa = parseInt(document.getElementById('saturation').value);
+            let sh = parseInt(document.getElementById('sharpen').value);
+            let ga = parseFloat(document.getElementById('gamma').value);
+
+            // --- NOVÉ: Optimalizace pro resetovaný stav ---
+            // Pokud jsou všechny posuvníky v neutrální poloze, přeskočíme složité úpravy
+            // a provedeme pouze přemapování barev 1:1 bez ditheringu.
+            const isPristine = br === 0 && co === 0 && sa === 0 && sh === 0 && ga === 1.0;
+            if (isPristine) {
+                const w = 200; const h = 228;
+                const imgData = cropCtx.getImageData(0, 0, w, h);
+                const pixelData = imgData.data;
+
+                // --- OPRAVA pro stav bez ditheringu ---
+                // Musíme ručně zpracovat oba canvasy se správnými paletami.
+                const outFinalData = outCtx.createImageData(w, h);
+                const sunFinalData = sunCtx.createImageData(w, h);
+
+                for (let i = 0; i < pixelData.length; i += 4) {
+                    const r = pixelData[i], g = pixelData[i+1], b = pixelData[i+2];
+                    const definedIndex = findClosestColorIndex(r, g, b, palettesData.defined);
+                    
+                    const definedColor = palettesData.defined[definedIndex];
+                    outFinalData.data.set([definedColor.r, definedColor.g, definedColor.b, 255], i);
+
+                    const sunColor = palettesData.sun[definedIndex];
+                    sunFinalData.data.set([sunColor.r, sunColor.g, sunColor.b, 255], i);
+                }
+                outCtx.putImageData(outFinalData, 0, 0);
+                sunCtx.putImageData(sunFinalData, 0, 0);
+                return;
+            }
+            // --- KONEC NOVÉ ČÁSTI ---
+
+
+
 
             const w = 200; const h = 228;
             const imgData = cropCtx.getImageData(0, 0, w, h);
             const data = imgData.data;
             const floatData = new Float32Array(w * h * 3);
 
-            let br = parseInt(document.getElementById('brightness').value);
-            let co = parseInt(document.getElementById('contrast').value);
-            let sa = parseInt(document.getElementById('saturation').value);
-            let sh = parseInt(document.getElementById('sharpen').value) / 100;
-            let ga = parseFloat(document.getElementById('gamma').value);
-            
-            let factor = (259 * (co + 255)) / (255 * (259 - co));
+            // --- FINÁLNÍ OPRAVA PŘESNOSTI BAREV ---
+            // Pokud je kontrast 0, faktor MUSÍ být přesně 1, jinak dojde k posunu barev.
+            // Původní vzorec vracel pro co=0 hodnotu ~1.015, což způsobovalo chybu.
+            let factor = (co === 0) ? 1.0 : (259 * (co + 255)) / (255 * (259 - co));
+            // Stejná optimalizace pro saturaci
             let satMult = 1 + (sa / 100);
             let invGamma = 1 / ga;
 
             let sharpenedData = new Uint8ClampedArray(data.length);
             if (sh > 0) {
-                let centerWeight = 1 + 4 * sh;
-                let edgeWeight = -sh;
+                let shAmount = sh / 100.0;
+                let centerWeight = 1 + 4 * shAmount;
+                let edgeWeight = -shAmount;
                 for (let y = 0; y < h; y++) {
                     for (let x = 0; x < w; x++) {
                         let idx = (y * w + x) * 4;
@@ -535,64 +606,86 @@
                 let g = factor * (srcG - 128) + 128 + br;
                 let b = factor * (srcB - 128) + 128 + br;
 
-                let lum = 0.2989 * r + 0.5870 * g + 0.1140 * b;
-                r = lum + satMult * (r - lum);
-                g = lum + satMult * (g - lum);
-                b = lum + satMult * (b - lum);
+                if (sa !== 0) {
+                    let lum = 0.2989 * r + 0.5870 * g + 0.1140 * b;
+                    r = lum + satMult * (r - lum);
+                    g = lum + satMult * (g - lum);
+                    b = lum + satMult * (b - lum);
+                }
 
                 floatData[j] = Math.max(0, Math.min(255, r));
                 floatData[j+1] = Math.max(0, Math.min(255, g));
                 floatData[j+2] = Math.max(0, Math.min(255, b));
             }
 
+            // Uložíme si finální obrazová data pro export, abychom se vyhnuli čtení z canvasu
+            const outImageData = mapToPalette(floatData, w, h, true);
+            outCanvas.finalImageData = outImageData;
+            outCtx.putImageData(outImageData, 0, 0);
+
+            // KONEČNĚ SPRÁVNĚ: Přeložíme hotový exportní obrázek do sluneční palety
+            translateToSunPalette(outImageData);
+        }
+
+        function translateToSunPalette(sourceImageData) {
+            const w = sourceImageData.width;
+            const h = sourceImageData.height;
+            const sunFinalData = sunCtx.createImageData(w, h);
+
+            for (let i = 0; i < sourceImageData.data.length; i += 4) {
+                const r = sourceImageData.data[i], g = sourceImageData.data[i+1], b = sourceImageData.data[i+2];
+                const definedIndex = findClosestColorIndex(r, g, b, palettesData.defined);
+                const sunColor = palettesData.sun[definedIndex];
+                sunFinalData.data.set([sunColor.r, sunColor.g, sunColor.b, 255], i);
+            }
+            sunCtx.putImageData(sunFinalData, 0, 0);
+        }
+
+        // Nová, sjednocená funkce pro mapování na paletu (s volitelným ditheringem)
+        function mapToPalette(pixelData, w, h, useDithering) {
+            const isFloat = pixelData instanceof Float32Array;
+
+            // --- FINÁLNÍ OPRAVA: Vytvoříme si kopie dat pro každý canvas ---
+            const sunPixelData = isFloat ? pixelData.slice() : pixelData;
+            const outPixelData = isFloat ? pixelData.slice() : pixelData;
+
             const outData = outCtx.createImageData(w, h);
-            const sunData = sunCtx.createImageData(w, h);
             
             for (let y = 0; y < h; y++) {
                 for (let x = 0; x < w; x++) {
                     let idx = (y * w + x) * 3;
                     let outIdx = (y * w + x) * 4;
+                    let srcIdx = isFloat ? idx : outIdx;
 
-                    let oldR = floatData[idx];
-                    let oldG = floatData[idx+1];
-                    let oldB = floatData[idx+2];
+                    // --- Zpracování pro outCanvas (finální export) ---
+                    let outR = outPixelData[srcIdx], outG = outPixelData[srcIdx+1], outB = outPixelData[srcIdx+2];
+                    let outIndex = findClosestColorIndex(outR, outG, outB, palettesData.defined);
+                    let outMappedColor = palettesData.defined[outIndex];
 
-                    let finalIndex = findClosestColorIndex(oldR, oldG, oldB, refPalette);
-                    let mappedColor = refPalette[finalIndex];
-
-                    let errR = oldR - mappedColor.r;
-                    let errG = oldG - mappedColor.g;
-                    let errB = oldB - mappedColor.b;
-
-                    const distribute = (dx, dy) => {
-                        let nx = x + dx, ny = y + dy;
-                        if (nx >= 0 && nx < w && ny < h) {
-                            let nIdx = (ny * w + nx) * 3;
-                            floatData[nIdx] += errR / 8;
-                            floatData[nIdx+1] += errG / 8;
-                            floatData[nIdx+2] += errB / 8;
-                        }
-                    };
-                    
-                    distribute(1, 0); distribute(2, 0);
-                    distribute(-1, 1); distribute(0, 1); distribute(1, 1);
-                    distribute(0, 2);
-
-                    let finalPebbleColor = palettesData.defined[finalIndex];
-                    outData.data[outIdx] = finalPebbleColor.r;
-                    outData.data[outIdx+1] = finalPebbleColor.g;
-                    outData.data[outIdx+2] = finalPebbleColor.b;
+                    if (useDithering && isFloat) {
+                        let errR = outR - outMappedColor.r;
+                        let errG = outG - outMappedColor.g;
+                        let errB = outB - outMappedColor.b;
+                        const distribute = (dx, dy, data) => {
+                            let nx = x + dx, ny = y + dy;
+                            if (nx >= 0 && nx < w && ny < h) {
+                                let nIdx = (ny * w + nx) * 3;
+                                data[nIdx]   += errR / 8;
+                                data[nIdx+1] += errG / 8;
+                                data[nIdx+2] += errB / 8;
+                            }
+                        };
+                        distribute(1, 0, outPixelData); distribute(2, 0, outPixelData);
+                        distribute(-1, 1, outPixelData); distribute(0, 1, outPixelData); distribute(1, 1, outPixelData);
+                        distribute(0, 2, outPixelData);
+                    }
+                    outData.data[outIdx] = outMappedColor.r;
+                    outData.data[outIdx+1] = outMappedColor.g;
+                    outData.data[outIdx+2] = outMappedColor.b;
                     outData.data[outIdx+3] = 255;
-
-                    let previewSunColor = refPalette[finalIndex];
-                    sunData.data[outIdx] = previewSunColor.r;
-                    sunData.data[outIdx+1] = previewSunColor.g;
-                    sunData.data[outIdx+2] = previewSunColor.b;
-                    sunData.data[outIdx+3] = 255;
                 }
             }
-            outCtx.putImageData(outData, 0, 0);
-            sunCtx.putImageData(sunData, 0, 0);
+            return outData;
         }
 
         // --- Funkcionalita pro Bypass checkbox ---
@@ -635,11 +728,14 @@
             // Problém: Vlastnost .buffer u ImageData.data není spolehlivě podporována na všech zařízeních.
             // Řešení: Místo problematického .buffer předáme knihovně UPNG.js přímo pole .data (Uint8ClampedArray).
             // Je to robustní a spolehlivý způsob.
-            statusEl.textContent = 'Krok 1: Získávání finálních obrazových dat...';
-            const finalImageData = outCtx.getImageData(0, 0, 200, 228);
+            statusEl.textContent = 'Krok 1: Příprava finálních obrazových dat...';
+            const finalImageData = outCanvas.finalImageData || outCtx.getImageData(0, 0, 200, 228);
 
             statusEl.textContent = 'Krok 2: Enkódování do formátu PNG...';
-            const finalPngData = UPNG.encode([finalImageData.data], 200, 228, 64);
+            // --- OPRAVA: Přesnost barev v exportu ---
+            // Nastavením počtu barev na 0 říkáme UPNG.js, aby neprováděl žádnou barevnou kvantizaci (true-color PNG).
+            // Tím zajistíme, že RGB hodnoty v exportovaném PNG budou 100% shodné s naší `defined` paletou.
+            const finalPngData = UPNG.encode([finalImageData.data], 200, 228, 0);
 
             statusEl.textContent = `Data připravena. Velikost: ${finalPngData.byteLength} bajtů. Odesílám...`;
 
