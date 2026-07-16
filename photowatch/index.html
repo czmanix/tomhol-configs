@@ -628,7 +628,7 @@
             return window.btoa(binary);
         }
 
-        document.getElementById('sendToWatchBtn').addEventListener('click', () => {
+	document.getElementById('sendToWatchBtn').addEventListener('click', () => {
             const statusEl = document.getElementById('status');
             statusEl.textContent = 'Připravuji data pro odeslání...';
 
@@ -641,7 +641,9 @@
             const finalImageData = outCanvas.finalImageData || outCtx.getImageData(0, 0, 200, 228);
 
             statusEl.textContent = 'Krok 2: Enkódování do formátu PNG...';
-            const finalPngData = UPNG.encode([finalImageData.data], 200, 228, 0);
+            
+            // OPRAVA: UPNG.encode vyžaduje ArrayBuffer (.buffer), nikoliv Uint8ClampedArray (.data)
+            const finalPngData = UPNG.encode([finalImageData.data.buffer], 200, 228, 0);
 
             statusEl.textContent = `Data připravena. Velikost: ${finalPngData.byteLength} bajtů. Odesílám...`;
 
@@ -652,6 +654,7 @@
             const returnUrl = 'pebblejs://close#' + encodeURIComponent(JSON.stringify(settings));
             document.location.href = returnUrl;
         });
+
 
         const NUM_PRESETS = 5;
 
