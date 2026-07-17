@@ -31,9 +31,14 @@
         .canvas-wrapper { text-align: center; flex: 1; min-width: 0; display: flex; flex-direction: column; }
         
         .canvas-title { font-size: 0.8rem; margin-bottom: 5px; color: #aaa; }
-        canvas { border: 2px solid #444; border-radius: 4px; background: #000; touch-action: none; width: 100%; max-width: 200px; height: auto; margin: 0 auto; }
+        /* Nový kontejner pro plátno a překrytí */
+        .preview-container { position: relative; width: 100%; max-width: 200px; margin: 0 auto; }
+        /* Styl pro překryvný obrázek */
+        #watchface-overlay { position: absolute; top: 2px; left: 2px; width: 200px; height: 228px; pointer-events: none; display: block;}
+
+        canvas { border: 2px solid #444; border-radius: 2px; background: #000; touch-action: none; width: 100%; max-width: 200px; height: auto; margin: 0 auto; }
         
-        .zoom-control { margin-top: 5px; }
+        .zoom-control { margin-top: 10px; }
 
         .presets-container { display: flex; gap: 6px; margin-top: 15px; justify-content: center; }
         .preset-slot { width: 50px; height: 57px; border: 2px solid #444; border-radius: 4px; background: #222; cursor: pointer; }
@@ -72,7 +77,7 @@
                 <span class="indicator">▼</span>
             </div>
             <div class="collapsible-content">
-                <label>Upload Image:</label>
+                <label>Upload Image (not active on Android):</label>
                 <input type="file" id="upload" accept="image/*">
                 <label style="margin-top: 10px;">...or paste from <span style="color: white">bit.ly/photowatch-uploader</span> opened in Chrome:</label>
                 <input type="text" id="image-url" placeholder="https://i.imgur.com/your-image.png" style="width: 100%; padding: 10px; margin-top: 5px; background: #333; color: white; border: 1px solid #444; border-radius: 4px; box-sizing: border-box;">
@@ -98,12 +103,19 @@
                         <canvas id="cropCanvas" width="200" height="228"></canvas>
                         <div class="zoom-control">
                             <label style="margin-top:0;">Zoom:</label>
-                            <input type="range" id="zoom" min="0.31666666666666665" max="1.5833333333333333" step="0.012666666666666666" value="1" style="width:90%;accent-color: var(--accent);">
+                            <input type="range" id="zoom" min="0.31666666666666665" max="1.5833333333333333" step="0.012666666666666666" value="1" style="margin-top:10px;width:90%;accent-color: var(--accent);">
                         </div>
                     </div>
                     <div class="canvas-wrapper">
                         <div class="canvas-title">Real Pebble view</div>
-                        <canvas id="sunCanvas" width="200" height="228"></canvas>
+                        <!-- Kontejner pro plátno a překrytí -->
+                        <div class="preview-container">
+                            <canvas id="sunCanvas" width="200" height="228"></canvas>
+                            <img id="watchface-overlay" src="overbotsec.png"> <!-- Výchozí překrytí -->
+                                     <label for="watch-style">Time display style:</label>
+                <select id="watch-style" style="width: 100%; padding: 5px; margin-top: 5px; background: #333; color: white; border: 1px solid #444; border-radius: 4px; box-sizing: border-box;">
+                    <option value="1" selected>Bottom with seconds</option><option value="0">Top with seconds</option><option value="3">Bottom with date</option><option value="2">Top with date</option></select>
+                        </div>
                     </div>
                 </div>
                 <div class="btn-group">
@@ -142,6 +154,7 @@
             </div>
         </div>
 
+       
         <div class="collapsible-section">
             <div class="collapsible-header">
                 <h2>3. Export image</h2>
@@ -201,6 +214,9 @@
         const sunCanvas = document.getElementById('sunCanvas');
         const sunCtx = sunCanvas.getContext('2d');
 
+        const watchStyleSelect = document.getElementById('watch-style');
+        const watchfaceOverlay = document.getElementById('watchface-overlay');
+
         let sourceImg = null;
         let imgX = 0, imgY = 0, imgScale = 1;
         let isDragging = false, startX, startY;
@@ -208,6 +224,8 @@
         const palettesData = { defined: [], sun: [] };
 
         function generateHardcodedPalettes() {
+            // ... (stávající kód pro generování palet)
+
             palettesData.defined = [
                 {r:0,g:0,b:0}     , {r:0,g:0,b:85}    , {r:0,g:0,b:170}   , {r:85,g:0,b:0},
                 {r:0,g:0,b:255}   , {r:85,g:0,b:85}   , {r:85,g:0,b:170}  , {r:0,g:85,b:0},
@@ -643,14 +661,29 @@
             const finalPngData = UPNG.encode([finalImageData.data.buffer], 200, 228, 0);
 
             statusEl.textContent = `Data připravena. Velikost: ${finalPngData.byteLength} bajtů. Odesílám...`;
-
+            
+            // Přidání hodnoty watch_style do odesílaných nastavení
             const settings = {
-                'png_base64': bufferToBase64(finalPngData)
+                'png_base64': bufferToBase64(finalPngData),
+                'watch_style': watchStyleSelect.value
             };
 
             const returnUrl = 'pebblejs://close#' + encodeURIComponent(JSON.stringify(settings));
             document.location.href = returnUrl;
         });
+
+        // --- NOVÝ KÓD PRO VÝBĚR STYLU ---
+        const overlayFiles = ['overtopsec.png', 'overbotsec.png', 'overtop.png', 'overbot.png'];
+
+        watchStyleSelect.addEventListener('change', (e) => {
+            const selectedStyle = parseInt(e.target.value, 10);
+            if (selectedStyle >= 0 && selectedStyle < overlayFiles.length) {
+                watchfaceOverlay.src = overlayFiles[selectedStyle];
+            }
+        });
+        // Nastavení výchozího překrytí při startu
+        watchfaceOverlay.src = overlayFiles[parseInt(watchStyleSelect.value, 10)];
+        // --- KONEC NOVÉHO KÓDU ---
 
 
         const NUM_PRESETS = 5;
@@ -704,7 +737,8 @@
                     saturation: document.getElementById('saturation').value,
                     sharpen: document.getElementById('sharpen').value,
                     gamma: document.getElementById('gamma').value,
-                    bypass: document.getElementById('bypass').checked
+                    bypass: document.getElementById('bypass').checked,
+                    watch_style: watchStyleSelect.value // Uložení stylu
                 }
             };
 
@@ -783,6 +817,9 @@
                     document.getElementById(id).value = settings[id];
                     document.getElementById(id.substring(0, 2) + 'Val').value = settings[id];
                 });
+
+                watchStyleSelect.value = settings.watch_style || '1'; // Načtení stylu, výchozí je 1
+                watchStyleSelect.dispatchEvent(new Event('change')); // Vyvolání změny pro aktualizaci náhledu
 
                 document.getElementById('bypass').checked = settings.bypass || false;
                 document.getElementById('bypass').dispatchEvent(new Event('change'));
