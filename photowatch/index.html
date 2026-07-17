@@ -79,7 +79,7 @@
             <div class="collapsible-content">
                 <label>Upload Image (not active on Android):</label>
                 <input type="file" id="upload" accept="image/*">
-                <label style="margin-top: 10px;">or paste image URL. Generate at <span style="color: white">bit.ly/photowatch-uploader</span> :</label>
+                <label style="margin-top: 10px;">Or paste image URL:<br/>Generate yours at <span style="color: white">bit.ly/photowatch-uploader</span></label>
                 <input type="text" id="image-url" placeholder="https://i.imgur.com/your-image.png" style="width: 100%; padding: 10px; margin-top: 5px; background: #333; color: white; border: 1px solid #444; border-radius: 4px; box-sizing: border-box;">
                 <div class="presets-container">
                     <canvas id="preset-0" class="preset-slot" data-slot="0" width="50" height="57"></canvas>
@@ -207,6 +207,9 @@
                         <input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
                         <input type="image" style="margin:10px" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
                         <img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
+                        
+                        <button id="hardResetBtn" style="margin-top: 15px; background: #c0392b; color: white;">⚠️ Clear All Presets & Reset</button>
+
                         </form>
 
 
@@ -333,7 +336,12 @@
                 const img = new Image();
                 img.crossOrigin = 'anonymous';
                 img.onload = () => handleImageLoad(img);
-                img.onerror = () => { document.getElementById('status').textContent = 'Chyba: Nelze načíst obrázek z dané URL.'; };
+                img.onerror = () => { 
+                    const statusEl = document.getElementById('status');
+                    statusEl.style.display = 'block';
+                    statusEl.style.color = '#ff6b6b';
+                    statusEl.innerHTML = '<b>Error:</b> Cannot load image from this URL.<br>This is likely a CORS security issue. Please use a direct image link (ending in .png, .jpg) from a hosting service like Imgur, or use the <a href="https://czmanix.github.io/tomhol-configs/photowatch/uploader.html" target="_blank" style="color: var(--accent)">uploader tool</a> to get a compatible link.';
+                };
                 img.src = e.target.value;
             }
         });
@@ -663,22 +671,22 @@
 
 	document.getElementById('sendToWatchBtn').addEventListener('click', () => {
             const statusEl = document.getElementById('status');
-            statusEl.textContent = 'Připravuji data pro odeslání...';
+            statusEl.textContent = 'Preparing data to send...';
 
             if (!sourceImg) {
-                statusEl.textContent = 'Chyba: Není co odeslat. Nejprve nahrajte a upravte obrázek.';
+                statusEl.textContent = 'Error: Nothing to send. Please upload and adjust an image first.';
                 return;
             }
 
-            statusEl.textContent = 'Krok 1: Příprava finálních obrazových dat...';
+            statusEl.textContent = 'Step 1: Preparing final image data...';
             const finalImageData = outCanvas.finalImageData || outCtx.getImageData(0, 0, 200, 228);
 
-            statusEl.textContent = 'Krok 2: Enkódování do formátu PNG...';
+            statusEl.textContent = 'Step 2: Encoding to PNG format...';
             
             // OPRAVA: UPNG.encode vyžaduje ArrayBuffer (.buffer), nikoliv Uint8ClampedArray (.data)
             const finalPngData = UPNG.encode([finalImageData.data.buffer], 200, 228, 0);
 
-            statusEl.textContent = `Data připravena. Velikost: ${finalPngData.byteLength} bajtů. Odesílám...`;
+            statusEl.textContent = `Data ready. Size: ${finalPngData.byteLength} bytes. Sending...`;
             
             // Přidání hodnoty watch_style do odesílaných nastavení
             const settings = {
@@ -708,7 +716,7 @@
 
         function savePreset(slotIndex) {
             if (!sourceImg) {
-                document.getElementById('status').textContent = 'Nelze uložit prázdný preset. Nejprve nahrajte obrázek.';
+                document.getElementById('status').textContent = 'Cannot save an empty preset. Please upload an image first.';
                 return;
             }
 
@@ -772,12 +780,12 @@
                 const bottomPresetCtx = bottomPresetCanvas.getContext('2d');
                 bottomPresetCtx.clearRect(0, 0, 50, 57);
                 bottomPresetCtx.drawImage(tempThumbCanvas, 0, 0);
-                document.getElementById('status').textContent = `Konfigurace uložena do slotu ${slotIndex + 1}.`;
+                document.getElementById('status').textContent = `Configuration saved to slot ${slotIndex + 1}.`;
             } catch (e) {
                 if (e.name === 'QuotaExceededError') {
-                    document.getElementById('status').textContent = 'Chyba: Nedostatek místa v paměti (localStorage). Smažte prosím některé presety.';
+                    document.getElementById('status').textContent = 'Error: Not enough space in memory (localStorage). Please clear some presets.';
                 } else {
-                    document.getElementById('status').textContent = 'Chyba při ukládání: ' + e.message;
+                    document.getElementById('status').textContent = 'Error while saving: ' + e.message;
                 }
             }
         }
@@ -793,13 +801,13 @@
             const bottomPresetCtx = bottomPresetCanvas.getContext('2d');
             bottomPresetCtx.clearRect(0, 0, 50, 57);
 
-            document.getElementById('status').textContent = `Slot ${slotIndex + 1} byl vymazán.`;
+            document.getElementById('status').textContent = `Slot ${slotIndex + 1} has been cleared.`;
         }
 
         function loadPreset(slotIndex) {
             const presetJSON = localStorage.getItem(`photowatch_preset_${slotIndex}`);
             if (!presetJSON) {
-                document.getElementById('status').textContent = `Slot ${slotIndex + 1} je prázdný.`;
+                document.getElementById('status').textContent = `Slot ${slotIndex + 1} is empty.`;
                 return;
             }
 
@@ -845,7 +853,7 @@
                 drawCropCanvas();
                 processImage();
                 document.getElementById('sendToWatchBtn').disabled = false;
-                document.getElementById('status').textContent = `Načtena konfigurace ze slotu ${slotIndex + 1}.`;
+                document.getElementById('status').textContent = `Loaded configuration from slot ${slotIndex + 1}.`;
             };
             img.src = presetData.imageDataUrl;
         }
@@ -882,6 +890,16 @@
             });
         });
 
+        document.getElementById('hardResetBtn').addEventListener('click', (e) => {
+            e.preventDefault(); // Zabrání odeslání formuláře, ve kterém je tlačítko
+            if (confirm('Do you really want to delete ALL presets and reset the configuration? This action is irreversible and will fix corrupted storage.')) {
+                for (let i = 0; i < NUM_PRESETS; i++) {
+                    localStorage.removeItem(`photowatch_preset_${i}`);
+                }
+                alert('All presets have been deleted. The page will now reload.');
+                location.reload();
+            }
+        });
     </script>
 
 </body></html>
