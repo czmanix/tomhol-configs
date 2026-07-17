@@ -79,7 +79,7 @@
             <div class="collapsible-content">
                 <label>Upload Image (not active on Android):</label>
                 <input type="file" id="upload" accept="image/*">
-                <label style="margin-top: 10px;">Or paste image URL:<br/>Generate yours at <span style="color: white">bit.ly/photowatch-uploader</span></label>
+                <label style="margin-top: 10px;">Or paste image URL: <SPAN id="corserror" style="color: RED"></SPAN><br/>Generate yours at <span style="color: white">bit.ly/photowatch-uploader</span></label>
                 <input type="text" id="image-url" placeholder="https://i.imgur.com/your-image.png" style="width: 100%; padding: 10px; margin-top: 5px; background: #333; color: white; border: 1px solid #444; border-radius: 4px; box-sizing: border-box;">
                 <div class="presets-container">
                     <canvas id="preset-0" class="preset-slot" data-slot="0" width="50" height="57"></canvas>
@@ -208,8 +208,6 @@
                         <input type="image" style="margin:10px" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
                         <img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
                         
-                        <button id="hardResetBtn" style="margin-top: 15px; background: #c0392b; color: white;">⚠️ Clear All Presets & Reset</button>
-
                         </form>
 
 
@@ -296,6 +294,8 @@
             const scaleX = 200 / sourceImg.width;
             const scaleY = 228 / sourceImg.height;
             const baseScale = Math.max(scaleX, scaleY);
+            const statusEl = document.getElementById('corserror');
+                statusEl.textContent = '';
 
             const zoomSlider = document.getElementById('zoom');
             zoomSlider.min = baseScale;
@@ -336,11 +336,13 @@
                 const img = new Image();
                 img.crossOrigin = 'anonymous';
                 img.onload = () => handleImageLoad(img);
-                img.onerror = () => { 
-                    const statusEl = document.getElementById('status');
-                    statusEl.style.display = 'block';
-                    statusEl.style.color = '#ff6b6b';
-                    statusEl.innerHTML = '<b>Error:</b> Cannot load image from this URL.<br>This is likely a CORS security issue. Please use a direct image link (ending in .png, .jpg) from a hosting service like Imgur, or use the <a href="https://czmanix.github.io/tomhol-configs/photowatch/uploader.html" target="_blank" style="color: var(--accent)">uploader tool</a> to get a compatible link.';
+                img.onerror = () => {
+                    // Zablokujeme možnost uložení, pokud se obrázek nenačte
+                    sourceImg = null;
+                    document.getElementById('sendToWatchBtn').disabled = true;
+
+                    const statusEl = document.getElementById('corserror');
+                    statusEl.textContent = 'This URL is blocked, use the uploader';
                 };
                 img.src = e.target.value;
             }
@@ -671,22 +673,17 @@
 
 	document.getElementById('sendToWatchBtn').addEventListener('click', () => {
             const statusEl = document.getElementById('status');
-            statusEl.textContent = 'Preparing data to send...';
+            statusEl.style.display = 'none'; // Hide previous errors
 
             if (!sourceImg) {
-                statusEl.textContent = 'Error: Nothing to send. Please upload and adjust an image first.';
+                showError('Error: Nothing to send. Please upload and adjust an image first.');
                 return;
             }
 
-            statusEl.textContent = 'Step 1: Preparing final image data...';
             const finalImageData = outCanvas.finalImageData || outCtx.getImageData(0, 0, 200, 228);
-
-            statusEl.textContent = 'Step 2: Encoding to PNG format...';
             
             // OPRAVA: UPNG.encode vyžaduje ArrayBuffer (.buffer), nikoliv Uint8ClampedArray (.data)
             const finalPngData = UPNG.encode([finalImageData.data.buffer], 200, 228, 0);
-
-            statusEl.textContent = `Data ready. Size: ${finalPngData.byteLength} bytes. Sending...`;
             
             // Přidání hodnoty watch_style do odesílaných nastavení
             const settings = {
@@ -715,8 +712,9 @@
         const NUM_PRESETS = 5;
 
         function savePreset(slotIndex) {
-            if (!sourceImg) {
-                document.getElementById('status').textContent = 'Cannot save an empty preset. Please upload an image first.';
+            // Přidána robustnější kontrola, zda je obrázek skutečně načtený a platný
+            if (!sourceImg || !sourceImg.complete || sourceImg.naturalWidth === 0) {
+                showError('Cannot save an empty preset. Please upload an image first.');
                 return;
             }
 
@@ -780,12 +778,12 @@
                 const bottomPresetCtx = bottomPresetCanvas.getContext('2d');
                 bottomPresetCtx.clearRect(0, 0, 50, 57);
                 bottomPresetCtx.drawImage(tempThumbCanvas, 0, 0);
-                document.getElementById('status').textContent = `Configuration saved to slot ${slotIndex + 1}.`;
+                // document.getElementById('status').textContent = `Configuration saved to slot ${slotIndex + 1}.`;
             } catch (e) {
                 if (e.name === 'QuotaExceededError') {
-                    document.getElementById('status').textContent = 'Error: Not enough space in memory (localStorage). Please clear some presets.';
+                    showError('Error: Not enough space in memory (localStorage). Please clear some presets.');
                 } else {
-                    document.getElementById('status').textContent = 'Error while saving: ' + e.message;
+                    showError('Error while saving: ' + e.message);
                 }
             }
         }
@@ -801,13 +799,13 @@
             const bottomPresetCtx = bottomPresetCanvas.getContext('2d');
             bottomPresetCtx.clearRect(0, 0, 50, 57);
 
-            document.getElementById('status').textContent = `Slot ${slotIndex + 1} has been cleared.`;
+            // document.getElementById('status').textContent = `Slot ${slotIndex + 1} has been cleared.`;
         }
 
         function loadPreset(slotIndex) {
             const presetJSON = localStorage.getItem(`photowatch_preset_${slotIndex}`);
             if (!presetJSON) {
-                document.getElementById('status').textContent = `Slot ${slotIndex + 1} is empty.`;
+                // Slot is empty, do nothing silently.
                 return;
             }
 
@@ -853,7 +851,7 @@
                 drawCropCanvas();
                 processImage();
                 document.getElementById('sendToWatchBtn').disabled = false;
-                document.getElementById('status').textContent = `Loaded configuration from slot ${slotIndex + 1}.`;
+                // document.getElementById('status').textContent = `Loaded configuration from slot ${slotIndex + 1}.`;
             };
             img.src = presetData.imageDataUrl;
         }
@@ -890,19 +888,12 @@
             });
         });
 
-        document.getElementById('hardResetBtn').addEventListener('click', (e) => {
-            e.preventDefault(); // Zabrání odeslání formuláře, ve kterém je tlačítko
-            if (confirm('This will perform a "hard reset" and delete ALL data for this page from your browser. This is the last resort to fix a corrupted storage. Continue?')) {
-                try {
-                    localStorage.clear();
-                    alert('Storage has been cleared. The page will now reload.');
-                    // Reload the page with a cache-busting parameter
-                    window.location.href = window.location.pathname + '?t=' + new Date().getTime();
-                } catch (err) {
-                    alert('FATAL ERROR: Could not clear storage. Please go to your phone\'s browser settings and manually clear site data for "czmanix.github.io". Error: ' + err.message);
-                }
-            }
-        });
+        function showError(message) {
+            const statusEl = document.getElementById('status');
+            statusEl.style.display = 'block';
+            statusEl.style.color = '#ff6b6b';
+            statusEl.innerHTML = `<b>Error:</b> ${message}`;
+        }
     </script>
 
 </body></html>
