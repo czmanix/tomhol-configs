@@ -892,12 +892,15 @@
 
         document.getElementById('hardResetBtn').addEventListener('click', (e) => {
             e.preventDefault(); // Zabrání odeslání formuláře, ve kterém je tlačítko
-            if (confirm('Do you really want to delete ALL presets and reset the configuration? This action is irreversible and will fix corrupted storage.')) {
-                for (let i = 0; i < NUM_PRESETS; i++) {
-                    localStorage.removeItem(`photowatch_preset_${i}`);
+            if (confirm('This will perform a "hard reset" and delete ALL data for this page from your browser. This is the last resort to fix a corrupted storage. Continue?')) {
+                try {
+                    localStorage.clear();
+                    alert('Storage has been cleared. The page will now reload.');
+                    // Reload the page with a cache-busting parameter
+                    window.location.href = window.location.pathname + '?t=' + new Date().getTime();
+                } catch (err) {
+                    alert('FATAL ERROR: Could not clear storage. Please go to your phone\'s browser settings and manually clear site data for "czmanix.github.io". Error: ' + err.message);
                 }
-                alert('All presets have been deleted. The page will now reload.');
-                location.reload();
             }
         });
     </script>
