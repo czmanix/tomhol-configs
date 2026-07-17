@@ -58,7 +58,19 @@
                 // Zpracování odpovědi
                 if (data.success) {
                     const imgUrl = data.data.url;
-                    statusText.innerHTML = `Done! Copy the link and paste it into the main configuration window:<br><a href="${imgUrl}" target="_blank">${imgUrl}</a>`;
+                    if (navigator.clipboard) {
+                        navigator.clipboard.writeText(imgUrl).then(() => {
+                            // Úspěšně zkopírováno
+                            statusText.innerHTML = `URL copied to clipboard! Paste it into the main configuration window:<br><a href="${imgUrl}" target="_blank">${imgUrl}</a>`;
+                        }).catch(err => {
+                            // Chyba při kopírování (např. zamítnutí oprávnění)
+                            console.error('Could not copy text: ', err);
+                            statusText.innerHTML = `Done! Copy the link and paste it into the main configuration window:<br><a href="${imgUrl}" target="_blank">${imgUrl}</a>`;
+                        });
+                    } else {
+                        // Fallback pro starší prohlížeče, které nepodporují Clipboard API
+                        statusText.innerHTML = `Done! Copy the link and paste it into the main configuration window:<br><a href="${imgUrl}" target="_blank">${imgUrl}</a>`;
+                    }
                 } else {
                     statusText.textContent = "Upload failed. Error: " + (data.error?.message || 'Unknown error');
                 }
