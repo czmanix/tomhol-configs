@@ -223,6 +223,12 @@
 
     <div id="status" style="text-align: center; margin-top: 10px; color: #aaa;display:none"></div>
 
+    <!-- Debugovací konzole pro iOS -->
+    <div id="debug-log" style="position: fixed; bottom: 0; left: 0; right: 0; max-height: 20%; overflow-y: scroll; background: rgba(0,0,0,0.85); color: #0f0; font-family: monospace; padding: 5px; z-index: 9999; font-size: 10px; border-top: 1px solid #555;">
+      <strong>Debug Log:</strong><br>
+    </div>
+
+
     <script>
         const cropCanvas = document.getElementById('cropCanvas');
         const cropCtx = cropCanvas.getContext('2d', { willReadFrequently: true });
@@ -241,6 +247,26 @@
         let isDragging = false, startX, startY;
 
         const palettesData = { defined: [], sun: [] };
+
+        // --- LADICÍ FUNKCE ---
+        function log(message) {
+            try {
+                const logContainer = document.getElementById('debug-log');
+                if (logContainer) {
+                    const timestamp = new Date().toLocaleTimeString();
+                    const entry = document.createElement('div');
+
+                    if (typeof message === 'object' && message !== null) {
+                        message = JSON.stringify(message);
+                    }
+
+                    entry.textContent = `${timestamp}: ${message}`;
+                    logContainer.appendChild(entry);
+                    logContainer.scrollTop = logContainer.scrollHeight;
+                }
+            } catch (e) { /* V případě chyby v logování neděláme nic, abychom nezacyklili chyby. */ }
+        }
+        // --- KONEC LADICÍ FUNKCE ---
 
         function generateHardcodedPalettes() {
             // ... (stávající kód pro generování palet)
@@ -284,12 +310,14 @@
         }
 
         window.onload = () => {
+            log("window.onload: Stránka načtena, generuji palety a inicializuji presety.");
             generateHardcodedPalettes();
             drawCropCanvas();
             initPresets();
         };
 
         function handleImageLoad(image) {
+            log("handleImageLoad: Obrázek načten, nastavuji výchozí pozici a zoom.");
             sourceImg = image;
             const scaleX = 200 / sourceImg.width;
             const scaleY = 228 / sourceImg.height;
@@ -320,27 +348,36 @@
         }
 
         document.getElementById('upload').addEventListener('change', function(e) {
+            log("upload.change: Uživatel vybral soubor.");
             const file = e.target.files[0];
-            if (!file) return;
+            if (!file) {
+                log("Soubor nevybrán, končím.");
+                return;
+            }
+            log(`Vybrán soubor: ${file.name}, typ: ${file.type}, velikost: ${file.size} B.`);
             const reader = new FileReader();
             reader.onload = function(event) {
+                log("FileReader.onload: Soubor načten do data URL, vytvářím Image objekt.");
                 const img = new Image();
                 img.onload = () => handleImageLoad(img);
                 img.src = event.target.result;
             }
+            log("Spouštím reader.readAsDataURL.");
             reader.readAsDataURL(file);
         });
 
         document.getElementById('image-url').addEventListener('input', function(e) {
             if (e.target.value.startsWith('http')) {
+                log("image-url.input: Detekována URL, zkouším načíst obrázek.");
                 const img = new Image();
                 img.crossOrigin = 'anonymous';
                 img.onload = () => handleImageLoad(img);
                 img.onerror = () => {
+                    log("CHYBA: img.onerror - Nelze načíst obrázek z URL (CORS nebo jiná chyba).");
                     // Zablokujeme možnost uložení, pokud se obrázek nenačte
                     sourceImg = null;
                     document.getElementById('sendToWatchBtn').disabled = true;
-
+                    
                     const statusEl = document.getElementById('corserror');
                     statusEl.textContent = 'This URL is blocked, use the uploader';
                 };
@@ -565,6 +602,7 @@
         }
 
         function processImage() {
+            // log("processImage: Začínám zpracování obrazu."); // Toto může být příliš časté, proto zakomentováno
             if (!sourceImg || palettesData.sun.length === 0) return;
             
             const bypassCheckbox = document.getElementById('bypass');
@@ -672,26 +710,33 @@
         }
 
 	document.getElementById('sendToWatchBtn').addEventListener('click', () => {
+            log("sendToWatchBtn.click: Tlačítko 'Send to watch' stisknuto.");
             const statusEl = document.getElementById('status');
             statusEl.style.display = 'none'; // Hide previous errors
 
             if (!sourceImg) {
+                log("CHYBA: sourceImg je null. Není co odeslat.");
                 showError('Error: Nothing to send. Please upload and adjust an image first.');
                 return;
             }
 
             const finalImageData = outCanvas.finalImageData || outCtx.getImageData(0, 0, 200, 228);
+            log(`finalImageData získaná, velikost: ${finalImageData.data.byteLength} B.`);
             
             // OPRAVA: UPNG.encode vyžaduje ArrayBuffer (.buffer), nikoliv Uint8ClampedArray (.data)
             const finalPngData = UPNG.encode([finalImageData.data.buffer], 200, 228, 0);
+            log(`Obrázek zakódován do PNG, velikost: ${finalPngData.byteLength} B.`);
             
             // Přidání hodnoty watch_style do odesílaných nastavení
             const settings = {
                 'png_base64': bufferToBase64(finalPngData),
                 'watch_style': watchStyleSelect.value
             };
+            log("Vytvořen objekt 'settings'. Base64 data jsou příliš dlouhá pro log.");
+            log(`watch_style: ${settings.watch_style}`);
 
             const returnUrl = 'pebblejs://close#' + encodeURIComponent(JSON.stringify(settings));
+            log("Vytvořena finální 'returnUrl'. Přesměrovávám...");
             document.location.href = returnUrl;
         });
 
