@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PhotoWatch configuration</title>
+    <style>
+        :root { --bg: #1e1e1e; --panel: #2a2a2a; --text: #eee; --accent: #00a86b; --auto: #007acc; }
+        body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: sans-serif; display: flex; flex-direction: column; align-items: center; }
+        h1 { font-size: 1.2rem; margin: 15px 0; text-align: center; }
+        
+        .container { width: 100%; max-width: 500px; padding: 10px; box-sizing: border-box; }
+        .panel { background: var(--panel); padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+        
+        label { display: block; margin-top: 5px; font-size: 0.9rem; font-weight: bold; color: #aaa; }
+        .controls-row { display: flex; align-items: center; gap: 10px; margin-top: 0px; }
+        .controls-row input[type="range"] { flex-grow: 1; accent-color: var(--accent); }
+        .controls-row input[type="number"] { width: 60px; padding: 5px; background: #333; color: white; border: 1px solid #444; border-radius: 4px; text-align: center; }
+        
+        input[type="file"], button { width: 100%; padding: 10px; margin-top: 5px; background: #333; color: white; border: 1px solid #444; border-radius: 4px; box-sizing: border-box; }
+        button { font-weight: bold; cursor: pointer; border: none; transition: background 0.2s; padding: 12px; }
+        
+        .btn-group { display: flex; gap: 10px; margin-top: 15px; }
+        .btn-auto { background: var(--auto); color: white; flex-grow: 1; border-radius: 4px; }
+        .btn-auto:active { background: #005f9e; }
+        .btn-reset { background: #555; color: white; flex-grow: 1; border-radius: 4px; }
+        .btn-reset:active { background: #444; }
+
+        .canvas-container { display: flex; flex-direction: column; align-items: center; gap: 15px; }
+        
+        .side-by-side { display: flex; width: 100%; gap: 10px; justify-content: center; }
+        .canvas-wrapper { text-align: center; flex: 1; min-width: 0; display: flex; flex-direction: column; }
+        
+        .canvas-title { font-size: 0.8rem; margin-bottom: 5px; color: #aaa; }
+        /* Nový kontejner pro plátno a překrytí */
+        .preview-container { position: relative; width: 100%; max-width: 200px; margin: 0 auto; }
+        /* Styl pro překryvný obrázek */
+        #watchface-overlay { position: absolute; top: 2px; left: 2px; width: 100%; pointer-events: none; display: block;}
+
+        canvas { border: 2px solid #444; border-radius: 2px; background: #000; touch-action: none; width: 100%; max-width: 200px; height: auto; margin: 0 auto; }
+        
+        .zoom-control { margin-top: 10px; }
+
+        .presets-container { display: flex; gap: 6px; margin-top: 15px; justify-content: center; }
+        .preset-slot { width: 50px; height: 57px; border: 2px solid #444; border-radius: 4px; background: #222; cursor: pointer; }
+        .preset-slot:hover { border-color: var(--accent); }
+        
+        .save-preset-group { display: flex; gap: 6px; margin-top: 10px; justify-content: space-around; width: 100%; }
+        .save-preset-item { display: flex; flex-direction: column; align-items: center; gap: 4px; flex-basis: 0; flex-grow: 1; }
+        .save-preset-btn { width: 50px; background: #4a4a4a; font-size: 0.8rem; padding: 8px; border-radius: 4px; }
+        .clear-preset-btn { width: 50px; background: #c0392b; color: white; font-size: 0.8rem; padding: 8px; border-radius: 4px; }
+
+        .collapsible-header { background: var(--panel); padding: 15px; border-radius: 8px; cursor: pointer; user-select: none; display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+        .collapsible-header h2 { margin: 0; font-size: 1.1rem; }
+        .collapsible-header .indicator { transition: transform 0.3s ease; }
+        .collapsible-content { background: var(--panel); padding: 0 15px; max-height: 2000px; overflow: hidden; transition: max-height 0.5s ease, padding 0.5s ease; border-radius: 0 0 8px 8px; }
+        .collapsible-content.collapsed { max-height: 0; padding-top: 0; padding-bottom: 0; }
+        .collapsible-header.collapsed { border-radius: 8px; }
+        .collapsible-header.collapsed .indicator { transform: rotate(-90deg); }
+        .collapsible-content > *:first-child { padding-top: 15px; }
+        .collapsible-content > *:last-child { padding-bottom: 15px; }
+        #palettes { display: none; }
+    </style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/upng-js/2.1.0/UPNG.min.js"></script>
+<style>
+  .imageye-selected {
+    outline: 2px solid black !important;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5) !important;
+  }
+</style></head>
+<body>
+    <div class="container">
+        <div class="collapsible-section">
+            <div class="collapsible-header">
+                <h2>1. Select image</h2>
+                <span class="indicator">▼</span>
+            </div>
+            <div class="collapsible-content">
+                <label>Upload Image (not active on Android):</label>
+                <input type="file" id="upload" accept="image/*">
+                <label style="margin-top: 10px;">Or paste image URL: <SPAN id="corserror" style="color: RED"></SPAN><br/>Generate yours at <span style="color: white">bit.ly/photowatch-uploader</span></label>
+                <input type="text" id="image-url" placeholder="https://i.imgur.com/your-image.png" style="width: 100%; padding: 10px; margin-top: 5px; background: #333; color: white; border: 1px solid #444; border-radius: 4px; box-sizing: border-box;">
+                <div class="presets-container">
+                    <canvas id="preset-0" class="preset-slot" data-slot="0" width="50" height="57"></canvas>
+                    <canvas id="preset-1" class="preset-slot" data-slot="1" width="50" height="57"></canvas>
+                    <canvas id="preset-2" class="preset-slot" data-slot="2" width="50" height="57"></canvas>
+                    <canvas id="preset-3" class="preset-slot" data-slot="3" width="50" height="57"></canvas>
+                    <canvas id="preset-4" class="preset-slot" data-slot="4" width="50" height="57"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="collapsible-section">
+            <div class="collapsible-header">
+                <h2>2. Tune image</h2>
+                <span class="indicator">▼</span>
+            </div>
+            <div class="collapsible-content">
+                <div class="side-by-side" style="padding-top: 15px;">
+                    <div class="canvas-wrapper">
+                        <div class="canvas-title">Original</div>
+                        <canvas id="cropCanvas" width="200" height="228"></canvas>
+                        <div class="zoom-control">
+                            <label style="margin-top:0;">Zoom:</label>
+                            <input type="range" id="zoom" min="0.31666666666666665" max="1.5833333333333333" step="0.012666666666666666" value="1" style="margin-top:10px;width:90%;accent-color: var(--accent);">
+                        </div>
+                    </div>
+                    <div class="canvas-wrapper">
+                        <div class="canvas-title">Real Pebble view</div>
+                        <!-- Kontejner pro plátno a překrytí -->
+                        <div class="preview-container">
+                            <canvas id="sunCanvas" width="200" height="228"></canvas>
+                            <img id="watchface-overlay" src="overbotsec.png"> <!-- Výchozí překrytí -->
+                                     <label for="watch-style">Time display style:</label>
+                <select id="watch-style" style="width: 100%; padding: 5px; margin-top: 5px; background: #333; color: white; border: 1px solid #444; border-radius: 4px; box-sizing: border-box;">
+                    <option value="1" selected>Bottom with seconds</option><option value="0">Top with seconds</option><option value="3">Bottom with date</option><option value="2">Top with date</option></select>
+                        </div>
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <button id="autoBtn" class="btn-auto">🪄 Auto-Fix</button>
+                    <button id="resetBtn" class="btn-reset">Reset</button>
+                </div>
+                <label>Gamma (Mid-tones):</label>
+                <div class="controls-row">
+                    <input type="range" id="gamma" min="0.1" max="3" step="0.1" value="1">
+                    <input type="number" id="gaVal" value="1" step="0.1">
+                </div>
+                <label>Brightness:</label>
+                <div class="controls-row">
+                    <input type="range" id="brightness" min="-100" max="100" value="0">
+                    <input type="number" id="brVal" value="0">
+                </div>
+                <label>Contrast:</label>
+                <div class="controls-row">
+                    <input type="range" id="contrast" min="-100" max="100" value="0">
+                    <input type="number" id="coVal" value="0">
+                </div>
+                <label>Saturation:</label>
+                <div class="controls-row">
+                    <input type="range" id="saturation" min="-100" max="100" value="0">
+                    <input type="number" id="saVal" value="0">
+                </div>
+                <label>Sharpen (Structure):</label>
+                <div class="controls-row">
+                    <input type="range" id="sharpen" min="0" max="100" value="0">
+                    <input type="number" id="shVal" value="0">
+                </div>
+                <div style="margin-top: 15px; display: flex; align-items: center; gap: 10px;">
+                    <input type="checkbox" id="bypass" style="width: auto; margin: 0;">
+                    <label for="bypass" style="margin: 0; font-weight: normal;">Bypass processing</label>
+                </div>
+            </div>
+        </div>
+
+       
+        <div class="collapsible-section">
+            <div class="collapsible-header">
+                <h2>3. Export image</h2>
+                <span class="indicator">▼</span>
+            </div>
+            <div class="collapsible-content">
+                <div class="save-preset-group" style="padding-top: 15px; margin-bottom: 15px;">
+                    <div class="save-preset-item">
+                        <button class="save-preset-btn" data-slot="0">Save</button>
+                        <canvas id="save-preset-thumb-0" class="preset-slot" data-slot="0" width="50" height="57"></canvas>
+                        <button class="clear-preset-btn" data-slot="0">Clear</button>
+                    </div>
+                    <div class="save-preset-item">
+                        <button class="save-preset-btn" data-slot="1">Save</button>
+                        <canvas id="save-preset-thumb-1" class="preset-slot" data-slot="1" width="50" height="57"></canvas>
+                        <button class="clear-preset-btn" data-slot="1">Clear</button>
+                    </div>
+                    <div class="save-preset-item">
+                        <button class="save-preset-btn" data-slot="2">Save</button>
+                        <canvas id="save-preset-thumb-2" class="preset-slot" data-slot="2" width="50" height="57"></canvas>
+                        <button class="clear-preset-btn" data-slot="2">Clear</button>
+                    </div>
+                    <div class="save-preset-item">
+                        <button class="save-preset-btn" data-slot="3">Save</button>
+                        <canvas id="save-preset-thumb-3" class="preset-slot" data-slot="3" width="50" height="57"></canvas>
+                        <button class="clear-preset-btn" data-slot="3">Clear</button>
+                    </div>
+                    <div class="save-preset-item">
+                        <button class="save-preset-btn" data-slot="4">Save</button>
+                        <canvas id="save-preset-thumb-4" class="preset-slot" data-slot="4" width="50" height="57"></canvas>
+                        <button class="clear-preset-btn" data-slot="4">Clear</button>
+                    </div>
+                </div>
+                
+                <div class="canvas-container">
+                    
+                    <div class="canvas-wrapper" style="width:100%; max-width: 200px;">
+                        <div class="canvas-title">Export (Standard)</div>
+                        <canvas id="outCanvas" width="200" height="228"></canvas>
+                        <button id="sendToWatchBtn" style="margin-top: 10px; background: var(--accent);">Send to watch</button>
+
+                        <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+                        <input type="hidden" name="cmd" value="_donations">
+                        <input type="hidden" name="business" value="holcik@gmail.com">
+                        <input type="hidden" name="lc" value="CZ">
+                        <input type="hidden" name="item_name" value="TomHol">
+                        <input type="hidden" name="item_number" value="Pebble PhotoWatch">
+                        <input type="hidden" name="no_note" value="0">
+                        <input type="hidden" name="currency_code" value="USD">
+                        <input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_LG.gif:NonHostedGuest">
+                        <input type="image" style="margin:10px" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
+                        <img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
+                        
+                        </form>
+
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+
+    <div id="status" style="text-align: center; margin-top: 10px; color: #aaa;display:none"></div>
+
+    <script>
+        const cropCanvas = document.getElementById('cropCanvas');
+        const cropCtx = cropCanvas.getContext('2d', { willReadFrequently: true });
+        
+        const outCanvas = document.getElementById('outCanvas');
+        const outCtx = outCanvas.getContext('2d');
+
+        const sunCanvas = document.getElementById('sunCanvas');
+        const sunCtx = sunCanvas.getContext('2d');
+
+        const watchStyleSelect = document.getElementById('watch-style');
+        const watchfaceOverlay = document.getElementById('watchface-overlay');
+
+        let sourceImg = null;
+        let imgX = 0, imgY = 0, imgScale = 1;
+        let isDragging = false, startX, startY;
+
+        const palettesData = { defined: [], sun: [] };
+
+        function generateHardcodedPalettes() {
+            // ... (stávající kód pro generování palet)
+
+            palettesData.defined = [
+                {r:0,g:0,b:0}     , {r:0,g:0,b:85}    , {r:0,g:0,b:170}   , {r:85,g:0,b:0},
+                {r:0,g:0,b:255}   , {r:85,g:0,b:85}   , {r:85,g:0,b:170}  , {r:0,g:85,b:0},
+                {r:170,g:0,b:85}  , {r:0,g:85,b:170}  , {r:170,g:0,b:170} , {r:85,g:85,b:0},
+                {r:255,g:0,b:0}   , {r:0,g:85,b:255}  , {r:170,g:0,b:255} , {r:85,g:85,b:85},
+                {r:0,g:170,b:0}   , {r:170,g:85,b:0}  , {r:85,g:85,b:255} , {r:255,g:0,b:255},
+                {r:0,g:170,b:85}  , {r:170,g:85,b:85} , {r:0,g:170,b:170} , {r:170,g:85,b:170},
+                {r:170,g:85,b:255}, {r:85,g:170,b:85} , {r:255,g:85,b:85} , {r:85,g:170,b:170},
+                {r:255,g:85,b:170}, {r:0,g:255,b:0}   , {r:170,g:170,b:0} , {r:85,g:170,b:255},
+                {r:0,g:255,b:170} , {r:170,g:170,b:170}, {r:85,g:255,b:0}  , {r:255,g:170,b:0},
+                {r:0,g:255,b:255} , {r:170,g:170,b:255}, {r:85,g:255,b:85} , {r:255,g:170,b:85},
+                {r:85,g:255,b:255}, {r:255,g:170,b:255}, {r:170,g:255,b:85}, {r:170,g:255,b:170},
+                {r:255,g:255,b:0} , {r:170,g:255,b:255}, {r:255,g:255,b:85}, {r:255,g:255,b:170},
+                {r:170,g:255,b:0} , {r:170,g:170,b:85}, {r:255,g:255,b:255}, {r:85,g:255,b:170},
+                {r:255,g:85,b:255}, {r:85,g:170,b:0}  , {r:255,g:0,b:85}  , {r:170,g:0,b:0},
+                {r:0,g:170,b:255} , {r:255,g:0,b:170} , {r:0,g:85,b:85}   , {r:255,g:170,b:170},
+                {r:0,g:255,b:85}  , {r:255,g:85,b:0}  , {r:85,g:85,b:170} , {r:85,g:0,b:255}
+            ];
+            palettesData.sun = [
+                {r:39,g:32,b:32}  , {r:38,g:52,b:74}  , {r:27,g:65,b:104} , {r:91,g:36,b:35},
+                {r:3,g:72,b:122}  , {r:88,g:52,b:71}  , {r:86,g:69,b:99}  , {r:63,g:73,b:50},
+                {r:136,g:63,b:81} , {r:62,g:108,b:128}, {r:136,g:80,b:112}, {r:108,g:82,b:62},
+                {r:158,g:45,b:50} , {r:44,g:111,b:141}, {r:131,g:89,b:128}, {r:103,g:91,b:90},
+                {r:87,g:109,b:69} , {r:156,g:95,b:80} , {r:108,g:117,b:140}, {r:163,g:95,b:132},
+                {r:82,g:123,b:105}, {r:146,g:99,b:97} , {r:83,g:132,b:134}, {r:141,g:107,b:118},
+                {r:149,g:123,b:142}, {r:128,g:130,b:113}, {r:169,g:104,b:103}, {r:122,g:138,b:138},
+                {r:174,g:111,b:124}, {r:97,g:134,b:91} , {r:157,g:121,b:92}, {r:114,g:136,b:148},
+                {r:95,g:154,b:143}, {r:151,g:141,b:136}, {r:139,g:144,b:107}, {r:186,g:130,b:100},
+                {r:101,g:163,b:162}, {r:151,g:141,b:136}, {r:131,g:141,b:122}, {r:181,g:135,b:117},
+                {r:137,g:163,b:158}, {r:184,g:157,b:148}, {r:162,g:139,b:119}, {r:167,g:164,b:155},
+                {r:194,g:151,b:116}, {r:167,g:164,b:155}, {r:185,g:154,b:131}, {r:184,g:157,b:148},
+                {r:175,g:145,b:107}, {r:162,g:139,b:119}, {r:188,g:169,b:166}, {r:133,g:155,b:141},
+                {r:170,g:124,b:145}, {r:126,g:117,b:84}, {r:158,g:66,b:83} , {r:128,g:40,b:44},
+                {r:79,g:142,b:155}, {r:164,g:86,b:117}, {r:65,g:92,b:95}  , {r:182,g:145,b:141},
+                {r:98,g:145,b:120}, {r:174,g:91,b:75} , {r:107,g:107,b:120}, {r:85,g:83,b:125}
+            ];
+        }
+
+        window.onload = () => {
+            generateHardcodedPalettes();
+            drawCropCanvas();
+            initPresets();
+        };
+
+        function handleImageLoad(image) {
+            sourceImg = image;
+            const scaleX = 200 / sourceImg.width;
+            const scaleY = 228 / sourceImg.height;
+            const baseScale = Math.max(scaleX, scaleY);
+            const statusEl = document.getElementById('corserror');
+                statusEl.textContent = '';
+
+            const zoomSlider = document.getElementById('zoom');
+            zoomSlider.min = baseScale;
+            zoomSlider.max = baseScale * 5;
+            zoomSlider.step = (zoomSlider.max - zoomSlider.min) / 100;
+            
+            imgScale = baseScale;
+            zoomSlider.value = imgScale;
+
+            imgX = (200 - sourceImg.width * imgScale) / 2;
+            imgY = (228 - sourceImg.height * imgScale) / 2;
+
+            ['brightness', 'contrast', 'saturation', 'sharpen'].forEach(id => document.getElementById(id).value = 0);
+            ['brVal', 'coVal', 'saVal', 'shVal'].forEach(id => document.getElementById(id).value = 0);
+            document.getElementById('gamma').value = 1;
+            document.getElementById('gaVal').value = 1;
+
+            drawCropCanvas();
+            processImage();
+
+            document.getElementById('sendToWatchBtn').disabled = false;
+        }
+
+        document.getElementById('upload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = () => handleImageLoad(img);
+                img.src = event.target.result;
+            }
+            reader.readAsDataURL(file);
+        });
+
+        document.getElementById('image-url').addEventListener('input', function(e) {
+            if (e.target.value.startsWith('http')) {
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = () => handleImageLoad(img);
+                img.onerror = () => {
+                    // Zablokujeme možnost uložení, pokud se obrázek nenačte
+                    sourceImg = null;
+                    document.getElementById('sendToWatchBtn').disabled = true;
+
+                    const statusEl = document.getElementById('corserror');
+                    statusEl.textContent = 'This URL is blocked, use the uploader';
+                };
+                img.src = e.target.value;
+            }
+        });
+
+        function drawCropCanvas() {
+            cropCtx.fillStyle = '#000';
+            cropCtx.fillRect(0, 0, 200, 228);
+            if (sourceImg) {
+                cropCtx.drawImage(sourceImg, imgX, imgY, sourceImg.width * imgScale, sourceImg.height * imgScale);
+            }
+        }
+
+        function getScaleRatio() {
+            const rect = cropCanvas.getBoundingClientRect();
+            return cropCanvas.width / rect.width;
+        }
+
+        function startDrag(e) {
+            if (!sourceImg) return;
+            isDragging = true;
+            const pos = e.touches ? e.touches[0] : e;
+            const ratio = getScaleRatio();
+            startX = (pos.clientX * ratio) - imgX;
+            startY = (pos.clientY * ratio) - imgY;
+        }
+
+        function doDrag(e) {
+            if (!isDragging || !sourceImg) return;
+            e.preventDefault(); 
+            const pos = e.touches ? e.touches[0] : e;
+            const ratio = getScaleRatio();
+            imgX = (pos.clientX * ratio) - startX;
+            imgY = (pos.clientY * ratio) - startY;
+            drawCropCanvas();
+            processImage(); 
+        }
+
+        function endDrag() { isDragging = false; }
+
+        cropCanvas.addEventListener('mousedown', startDrag);
+        cropCanvas.addEventListener('mousemove', doDrag);
+        window.addEventListener('mouseup', endDrag);
+        cropCanvas.addEventListener('touchstart', startDrag, {passive: false});
+        cropCanvas.addEventListener('touchmove', doDrag, {passive: false});
+        window.addEventListener('touchend', endDrag);
+
+        document.getElementById('zoom').addEventListener('input', function(e) {
+            if (!sourceImg) return;
+            const oldScale = imgScale;
+            imgScale = parseFloat(this.value);
+            imgX = 100 - (100 - imgX) * (imgScale / oldScale);
+            imgY = 114 - (114 - imgY) * (imgScale / oldScale);
+            drawCropCanvas();
+            processImage(); 
+        });
+
+        const setupControl = (sliderId, inputId) => {
+            const slider = document.getElementById(sliderId);
+            const input = document.getElementById(inputId);
+            
+            slider.addEventListener('input', () => {
+                input.value = slider.value;
+                processImage();
+            });
+            
+            input.addEventListener('input', () => {
+                let val = parseFloat(input.value) || 0;
+                slider.value = val;
+                processImage();
+            });
+        };
+
+        setupControl('brightness', 'brVal');
+        setupControl('contrast', 'coVal');
+        setupControl('saturation', 'saVal');
+        setupControl('sharpen', 'shVal');
+        setupControl('gamma', 'gaVal');
+
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            ['brightness', 'contrast', 'saturation', 'sharpen'].forEach(id => document.getElementById(id).value = 0);
+            ['brVal', 'coVal', 'saVal', 'shVal'].forEach(id => document.getElementById(id).value = 0);
+            document.getElementById('gamma').value = 1;
+            document.getElementById('gaVal').value = 1;
+            processImage();
+        });
+
+        document.getElementById('autoBtn').addEventListener('click', autoAdjust);
+
+        function autoAdjust() {
+            if (!sourceImg) return;
+            const w = 200; const h = 228;
+            const imgData = cropCtx.getImageData(0, 0, w, h).data;
+            
+            let pixelCount = imgData.length / 4;
+            let lumArray = new Float32Array(pixelCount);
+            let sumL = 0;
+
+            for (let i = 0, p = 0; i < imgData.length; i += 4, p++) {
+                let lum = 0.2989 * imgData[i] + 0.5870 * imgData[i+1] + 0.1140 * imgData[i+2];
+                sumL += lum;
+                lumArray[p] = lum;
+            }
+            
+            lumArray.sort();
+            let p05 = lumArray[Math.floor(pixelCount * 0.05)]; 
+            let p75 = lumArray[Math.floor(pixelCount * 0.75)];
+            let p95 = lumArray[Math.floor(pixelCount * 0.95)];
+            let lAvg = sumL / pixelCount;
+
+            let saTarget = -20;
+            let currentRange = p95 - p05;
+            let coTarget = Math.round(25 - (currentRange * 0.3));
+            coTarget = Math.max(-15, Math.min(20, coTarget));
+
+            let brTarget = Math.round((128 - lAvg) * 0.25);
+            brTarget = Math.max(-15, Math.min(15, brTarget));
+
+            let gammaTarget = 1.0;
+            if (p75 > 160) {
+                gammaTarget = Math.max(0.6, 1.0 - ((p75 - 160) * 0.008));
+            } else if (p75 < 130) {
+                gammaTarget = Math.min(1.4, 1.0 + ((130 - p75) * 0.008));
+            }
+
+            let shTarget = 20;
+
+            document.getElementById('brightness').value = brTarget;
+            document.getElementById('brVal').value = brTarget;
+            document.getElementById('contrast').value = coTarget;
+            document.getElementById('coVal').value = coTarget;
+            document.getElementById('gamma').value = gammaTarget.toFixed(1);
+            document.getElementById('gaVal').value = gammaTarget.toFixed(1);
+            document.getElementById('sharpen').value = shTarget;
+            document.getElementById('shVal').value = shTarget;
+            document.getElementById('saturation').value = saTarget;
+            document.getElementById('saVal').value = saTarget;
+
+            processImage();
+        }
+
+        function colorDistance(c1, c2) {
+            return Math.pow(c1.r - c2.r, 2) + Math.pow(c1.g - c2.g, 2) + Math.pow(c1.b - c2.b, 2);
+        }
+
+        function findClosestColorIndex(r, g, b, palette) {
+            let minDiv = Infinity;
+            let matchIndex = 0;
+            const target = { r, g, b };
+            for (let i = 0; i < palette.length; i++) {
+                let div = colorDistance(target, palette[i]);
+                if (div < minDiv) {
+                    minDiv = div;
+                    matchIndex = i;
+                }
+            }
+            return matchIndex;
+        }
+
+        function renderToCanvases(pixelData, w, h, useDithering) {
+            const isFloat = pixelData instanceof Float32Array;
+            const workData = isFloat ? pixelData.slice() : new Float32Array(w * h * 3);
+            
+            if (!isFloat) {
+                for (let i = 0, j = 0; i < pixelData.length; i += 4, j += 3) {
+                    workData[j] = pixelData[i];
+                    workData[j+1] = pixelData[i+1];
+                    workData[j+2] = pixelData[i+2];
+                }
+            }
+
+            const outData = outCtx.createImageData(w, h);
+            const sunData = sunCtx.createImageData(w, h);
+
+            const targetPalette = useDithering ? palettesData.sun : palettesData.defined;
+
+            for (let y = 0; y < h; y++) {
+                for (let x = 0; x < w; x++) {
+                    let idx = (y * w + x) * 3;
+                    let outIdx = (y * w + x) * 4;
+
+                    let r = workData[idx], g = workData[idx+1], b = workData[idx+2];
+                    
+                    let bestIndex = findClosestColorIndex(r, g, b, targetPalette);
+                    
+                    let sunColor = palettesData.sun[bestIndex];
+                    let definedColor = palettesData.defined[bestIndex];
+
+                    sunData.data.set([sunColor.r, sunColor.g, sunColor.b, 255], outIdx);
+                    outData.data.set([definedColor.r, definedColor.g, definedColor.b, 255], outIdx);
+
+                    if (useDithering) {
+                        let matchColor = targetPalette[bestIndex];
+                        let errR = r - matchColor.r;
+                        let errG = g - matchColor.g;
+                        let errB = b - matchColor.b;
+
+                        const distribute = (dx, dy) => {
+                            let nx = x + dx, ny = y + dy;
+                            if (nx >= 0 && nx < w && ny < h) {
+                                let nIdx = (ny * w + nx) * 3;
+                                workData[nIdx]   += errR * 0.125;
+                                workData[nIdx+1] += errG * 0.125;
+                                workData[nIdx+2] += errB * 0.125;
+                            }
+                        };
+                        distribute(1, 0);
+                        distribute(2, 0);
+                        distribute(-1, 1);
+                        distribute(0, 1);
+                        distribute(1, 1);
+                        distribute(0, 2);
+                    }
+                }
+            }
+
+            outCanvas.finalImageData = outData;
+            outCtx.putImageData(outData, 0, 0);
+            sunCtx.putImageData(sunData, 0, 0);
+        }
+
+        function processImage() {
+            if (!sourceImg || palettesData.sun.length === 0) return;
+            
+            const bypassCheckbox = document.getElementById('bypass');
+            if (bypassCheckbox.checked) {
+                const w = 200; const h = 228;
+                const imgData = cropCtx.getImageData(0, 0, w, h);
+                renderToCanvases(imgData.data, w, h, false);
+                return;
+            }
+
+            let br = parseInt(document.getElementById('brightness').value);
+            let co = parseInt(document.getElementById('contrast').value);
+            let sa = parseInt(document.getElementById('saturation').value);
+            let sh = parseInt(document.getElementById('sharpen').value);
+            let ga = parseFloat(document.getElementById('gamma').value);
+
+            const w = 200; const h = 228;
+            const imgData = cropCtx.getImageData(0, 0, w, h);
+            const data = imgData.data;
+            const floatData = new Float32Array(w * h * 3);
+
+            let factor = (co === 0) ? 1.0 : (259 * (co + 255)) / (255 * (259 - co));
+            let satMult = 1 + (sa / 100);
+            let invGamma = 1 / ga;
+
+            let sharpenedData = new Uint8ClampedArray(data.length);
+            if (sh > 0) {
+                let shAmount = sh / 100.0;
+                let centerWeight = 1 + 4 * shAmount;
+                let edgeWeight = -shAmount;
+                for (let y = 0; y < h; y++) {
+                    for (let x = 0; x < w; x++) {
+                        let idx = (y * w + x) * 4;
+                        if (y === 0 || y === h - 1 || x === 0 || x === w - 1) {
+                            sharpenedData[idx] = data[idx];
+                            sharpenedData[idx+1] = data[idx+1];
+                            sharpenedData[idx+2] = data[idx+2];
+                        } else {
+                            for (let c = 0; c < 3; c++) {
+                                let val = data[idx + c] * centerWeight
+                                        + data[idx - 4 + c] * edgeWeight
+                                        + data[idx + 4 + c] * edgeWeight
+                                        + data[(idx - w * 4) + c] * edgeWeight
+                                        + data[(idx + w * 4) + c] * edgeWeight;
+                                sharpenedData[idx + c] = Math.min(255, Math.max(0, val));
+                            }
+                        }
+                    }
+                }
+            } else {
+                sharpenedData.set(data);
+            }
+
+            for (let i = 0, j = 0; i < sharpenedData.length; i += 4, j += 3) {
+                let srcR = sharpenedData[i];
+                let srcG = sharpenedData[i+1];
+                let srcB = sharpenedData[i+2];
+
+                if (ga !== 1) {
+                    srcR = 255 * Math.pow(srcR / 255, invGamma);
+                    srcG = 255 * Math.pow(srcG / 255, invGamma);
+                    srcB = 255 * Math.pow(srcB / 255, invGamma);
+                }
+
+                let r = factor * (srcR - 128) + 128 + br;
+                let g = factor * (srcG - 128) + 128 + br;
+                let b = factor * (srcB - 128) + 128 + br;
+
+                if (sa !== 0) {
+                    let lum = 0.2989 * r + 0.5870 * g + 0.1140 * b;
+                    r = lum + satMult * (r - lum);
+                    g = lum + satMult * (g - lum);
+                    b = lum + satMult * (b - lum);
+                }
+
+                floatData[j] = Math.max(0, Math.min(255, r));
+                floatData[j+1] = Math.max(0, Math.min(255, g));
+                floatData[j+2] = Math.max(0, Math.min(255, b));
+            }
+
+            renderToCanvases(floatData, w, h, true);
+        }
+
+        document.getElementById('bypass').addEventListener('change', function(e) {
+            const isBypassed = e.target.checked;
+            const controls = ['gamma', 'gaVal', 'brightness', 'brVal', 'contrast', 'coVal', 'saturation', 'saVal', 'sharpen', 'shVal', 'autoBtn', 'resetBtn'];
+            
+            controls.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.disabled = isBypassed;
+                }
+            });
+            processImage(); 
+        });
+
+        function bufferToBase64(buffer) {
+            let binary = '';
+            const bytes = new Uint8Array(buffer);
+            const len = bytes.byteLength;
+            for (let i = 0; i < len; i++) {
+                binary += String.fromCharCode(bytes[i]);
+            }
+            return window.btoa(binary);
+        }
+
+	document.getElementById('sendToWatchBtn').addEventListener('click', () => {
+            const statusEl = document.getElementById('status');
+            statusEl.style.display = 'none'; // Hide previous errors
+
+            if (!sourceImg) {
+                showError('Error: Nothing to send. Please upload and adjust an image first.');
+                return;
+            }
+
+            const finalImageData = outCanvas.finalImageData || outCtx.getImageData(0, 0, 200, 228);
+            
+            // OPRAVA: UPNG.encode vyžaduje ArrayBuffer (.buffer), nikoliv Uint8ClampedArray (.data)
+            const finalPngData = UPNG.encode([finalImageData.data.buffer], 200, 228, 0);
+            
+            // Přidání hodnoty watch_style do odesílaných nastavení
+            const settings = {
+                'png_base64': bufferToBase64(finalPngData),
+                'watch_style': watchStyleSelect.value
+            };
+
+            const returnUrl = 'pebblejs://close#' + encodeURIComponent(JSON.stringify(settings));
+            document.location.href = returnUrl;
+        });
+
+        // --- NOVÝ KÓD PRO VÝBĚR STYLU ---
+        const overlayFiles = ['overtopsec.png', 'overbotsec.png', 'overtop.png', 'overbot.png'];
+
+        watchStyleSelect.addEventListener('change', (e) => {
+            const selectedStyle = parseInt(e.target.value, 10);
+            if (selectedStyle >= 0 && selectedStyle < overlayFiles.length) {
+                watchfaceOverlay.src = overlayFiles[selectedStyle];
+            }
+        });
+        // Nastavení výchozího překrytí při startu
+        watchfaceOverlay.src = overlayFiles[parseInt(watchStyleSelect.value, 10)];
+        // --- KONEC NOVÉHO KÓDU ---
+
+
+        const NUM_PRESETS = 5;
+
+        function savePreset(slotIndex) {
+            // Přidána robustnější kontrola, zda je obrázek skutečně načtený a platný
+            if (!sourceImg || !sourceImg.complete || sourceImg.naturalWidth === 0) {
+                showError('Cannot save an empty preset. Please upload an image first.');
+                return;
+            }
+
+            const tempThumbCanvas = document.createElement('canvas');
+            tempThumbCanvas.width = 50;
+            tempThumbCanvas.height = 57;
+            const tempThumbCtx = tempThumbCanvas.getContext('2d');
+            tempThumbCtx.drawImage(outCanvas, 0, 0, 50, 57);
+            const thumbnailDataUrl = tempThumbCanvas.toDataURL();
+
+            let imageDataToSave = sourceImg.src;
+            let scaleToSave = imgScale;
+
+            const MAX_PRESET_DIM = 1400;
+            // OPRAVA NÁVRHU B: Zmenšení na 1400px + úprava měřítka a komprese
+            if (sourceImg.width > MAX_PRESET_DIM || sourceImg.height > MAX_PRESET_DIM || sourceImg.src.length > 400000) {
+                const aspect = sourceImg.width / sourceImg.height;
+                let w = sourceImg.width;
+                let h = sourceImg.height;
+                if (w > MAX_PRESET_DIM || h > MAX_PRESET_DIM) {
+                    if (w > h) { w = MAX_PRESET_DIM; h = w / aspect; } 
+                    else { h = MAX_PRESET_DIM; w = h * aspect; }
+                }
+                const tempImageCanvas = document.createElement('canvas');
+                tempImageCanvas.width = w; tempImageCanvas.height = h;
+                const tempImageCtx = tempImageCanvas.getContext('2d');
+                tempImageCtx.drawImage(sourceImg, 0, 0, w, h);
+                imageDataToSave = tempImageCanvas.toDataURL('image/jpeg', 0.78); 
+
+                // Měřítko (scale) se musí po zmenšení zvětšit úměrně k poměru, abychom kreslili stejně velko
+                const ratio = w / sourceImg.width;
+                scaleToSave = imgScale / ratio;
+            }
+
+            const presetData = {
+                imageDataUrl: imageDataToSave,
+                thumbnailDataUrl: thumbnailDataUrl,
+                settings: {
+                    imgScale: scaleToSave,
+                    imgX: imgX,
+                    imgY: imgY,
+                    brightness: document.getElementById('brightness').value,
+                    contrast: document.getElementById('contrast').value,
+                    saturation: document.getElementById('saturation').value,
+                    sharpen: document.getElementById('sharpen').value,
+                    gamma: document.getElementById('gamma').value,
+                    bypass: document.getElementById('bypass').checked,
+                    watch_style: watchStyleSelect.value // Uložení stylu
+                }
+            };
+
+            try {
+                localStorage.setItem(`photowatch_preset_${slotIndex}`, JSON.stringify(presetData));
+                
+                const topPresetCanvas = document.getElementById(`preset-${slotIndex}`);
+                const topPresetCtx = topPresetCanvas.getContext('2d');
+                topPresetCtx.clearRect(0, 0, 50, 57);
+                topPresetCtx.drawImage(tempThumbCanvas, 0, 0);
+
+                const bottomPresetCanvas = document.getElementById(`save-preset-thumb-${slotIndex}`);
+                const bottomPresetCtx = bottomPresetCanvas.getContext('2d');
+                bottomPresetCtx.clearRect(0, 0, 50, 57);
+                bottomPresetCtx.drawImage(tempThumbCanvas, 0, 0);
+                // document.getElementById('status').textContent = `Configuration saved to slot ${slotIndex + 1}.`;
+            } catch (e) {
+                if (e.name === 'QuotaExceededError') {
+                    showError('Error: Not enough space in memory (localStorage). Please clear some presets.');
+                } else {
+                    showError('Error while saving: ' + e.message);
+                }
+            }
+        }
+
+        function clearPreset(slotIndex) {
+            localStorage.removeItem(`photowatch_preset_${slotIndex}`);
+
+            const topPresetCanvas = document.getElementById(`preset-${slotIndex}`);
+            const topPresetCtx = topPresetCanvas.getContext('2d');
+            topPresetCtx.clearRect(0, 0, 50, 57);
+
+            const bottomPresetCanvas = document.getElementById(`save-preset-thumb-${slotIndex}`);
+            const bottomPresetCtx = bottomPresetCanvas.getContext('2d');
+            bottomPresetCtx.clearRect(0, 0, 50, 57);
+
+            // document.getElementById('status').textContent = `Slot ${slotIndex + 1} has been cleared.`;
+        }
+
+        function loadPreset(slotIndex) {
+            const presetJSON = localStorage.getItem(`photowatch_preset_${slotIndex}`);
+            if (!presetJSON) {
+                // Slot is empty, do nothing silently.
+                return;
+            }
+
+            const presetData = JSON.parse(presetJSON);
+
+            const img = new Image();
+            // OPRAVA: Pokud je uložená URL (začíná na http), musíme nastavit crossOrigin,
+            // aby se canvas "neušpinil" a my mohli číst jeho data (getImageData).
+            if (presetData.imageDataUrl.startsWith('http')) {
+                img.crossOrigin = 'anonymous';
+            }
+            img.onload = () => {
+                sourceImg = img;
+
+                // 1. DŮLEŽITÉ: Přepočet limitů šoupátka Zoomu přesně pro načtený obrázek
+                const scaleX = 200 / sourceImg.width;
+                const scaleY = 228 / sourceImg.height;
+                const baseScale = Math.max(scaleX, scaleY);
+
+                const zoomSlider = document.getElementById('zoom');
+                zoomSlider.min = baseScale;
+                zoomSlider.max = baseScale * 5;
+                zoomSlider.step = (zoomSlider.max - zoomSlider.min) / 100;
+
+                // 2. Aplikace uloženého nastavení
+                const settings = presetData.settings;
+                imgScale = parseFloat(settings.imgScale);
+                imgX = parseFloat(settings.imgX);
+                imgY = parseFloat(settings.imgY);
+                
+                zoomSlider.value = imgScale;
+                ['brightness', 'contrast', 'saturation', 'sharpen', 'gamma'].forEach(id => {
+                    document.getElementById(id).value = settings[id];
+                    document.getElementById(id.substring(0, 2) + 'Val').value = settings[id];
+                });
+
+                watchStyleSelect.value = settings.watch_style || '1'; // Načtení stylu, výchozí je 1
+                watchStyleSelect.dispatchEvent(new Event('change')); // Vyvolání změny pro aktualizaci náhledu
+
+                document.getElementById('bypass').checked = settings.bypass || false;
+                document.getElementById('bypass').dispatchEvent(new Event('change'));
+
+                drawCropCanvas();
+                processImage();
+                document.getElementById('sendToWatchBtn').disabled = false;
+                // document.getElementById('status').textContent = `Loaded configuration from slot ${slotIndex + 1}.`;
+            };
+            img.src = presetData.imageDataUrl;
+        }
+
+        function initPresets() {
+            for (let i = 0; i < NUM_PRESETS; i++) {
+                const presetJSON = localStorage.getItem(`photowatch_preset_${i}`);
+                if (presetJSON) {
+                    const presetData = JSON.parse(presetJSON);
+                    const thumb = new Image();
+                    thumb.onload = () => {
+                        const topPresetCanvas = document.getElementById(`preset-${i}`);
+                        const topPresetCtx = topPresetCanvas.getContext('2d');
+                        topPresetCtx.drawImage(thumb, 0, 0);
+
+                        const bottomPresetCanvas = document.getElementById(`save-preset-thumb-${i}`);
+                        const bottomPresetCtx = bottomPresetCanvas.getContext('2d');
+                        bottomPresetCtx.drawImage(thumb, 0, 0);
+                    };
+                    thumb.src = presetData.thumbnailDataUrl;
+                }
+                document.getElementById(`preset-${i}`).addEventListener('click', (e) => loadPreset(parseInt(e.target.dataset.slot)));
+                document.getElementById(`save-preset-thumb-${i}`).addEventListener('click', (e) => loadPreset(parseInt(e.target.dataset.slot)));
+                document.querySelector(`.save-preset-btn[data-slot="${i}"]`).addEventListener('click', (e) => savePreset(parseInt(e.target.dataset.slot)));
+                document.querySelector(`.clear-preset-btn[data-slot="${i}"]`).addEventListener('click', (e) => clearPreset(parseInt(e.target.dataset.slot)));
+            }
+        }
+
+        document.querySelectorAll('.collapsible-header').forEach(header => {
+            header.addEventListener('click', () => {
+                const content = header.nextElementSibling;
+                content.classList.toggle('collapsed');
+                header.classList.toggle('collapsed');
+            });
+        });
+
+        function showError(message) {
+            const statusEl = document.getElementById('status');
+            statusEl.style.display = 'block';
+            statusEl.style.color = '#ff6b6b';
+            statusEl.innerHTML = `<b>Error:</b> ${message}`;
+        }
+    </script>
+
+</body></html>
