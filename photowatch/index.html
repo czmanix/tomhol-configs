@@ -33,6 +33,7 @@
         .canvas-title { font-size: 0.8rem; margin-bottom: 5px; color: #aaa; }
         /* Nový kontejner pro plátno a překrytí */
         .preview-container { position: relative; width: 100%; max-width: 200px; margin: 0 auto; }
+        .preview-container.round, .canvas-wrapper canvas.round { border-radius: 50%; }
         /* Styl pro překryvný obrázek */
         #watchface-overlay { position: absolute; top: 2px; left: 2px; width: 100%; pointer-events: none; display: block;}
 
@@ -236,6 +237,9 @@
         const watchStyleSelect = document.getElementById('watch-style');
         const watchfaceOverlay = document.getElementById('watchface-overlay');
 
+        let WATCH_WIDTH = 200;
+        let WATCH_HEIGHT = 228;
+
         let sourceImg = null;
         let imgX = 0, imgY = 0, imgScale = 1;
         let isDragging = false, startX, startY;
@@ -284,6 +288,40 @@
         }
 
         window.onload = () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const platform = urlParams.get('platform') || 'pt2';
+
+            if (platform === 'pr2') {
+                WATCH_WIDTH = 260;
+                WATCH_HEIGHT = 260;
+                document.querySelectorAll('canvas').forEach(canvas => {
+                    if (['cropCanvas', 'sunCanvas', 'outCanvas'].includes(canvas.id)) {
+                        canvas.classList.add('round');
+                    }
+                });
+                document.querySelector('.preview-container').classList.add('round');
+
+                // Update preset canvas sizes for round watch
+                document.querySelectorAll('.preset-slot').forEach(canvas => {
+                    canvas.width = 65; // make it square-ish
+                    canvas.height = 65;
+                });
+                 document.querySelectorAll('.save-preset-group .preset-slot').forEach(canvas => {
+                    canvas.width = 65;
+                    canvas.height = 65;
+                });
+
+                // Update select options for round watch
+                const watchStyleSelect = document.getElementById('watch-style');
+                watchStyleSelect.innerHTML = '<option value="1" selected>Bottom</option><option value="0">Top</option><option value="3">Bottom with date</option><option value="2">Top with date</option>';
+                watchfaceOverlay.src = 'roundbot.png'; // Set initial overlay for round
+            }
+
+            [cropCanvas, sunCanvas, outCanvas].forEach(canvas => {
+                canvas.width = WATCH_WIDTH;
+                canvas.height = WATCH_HEIGHT;
+            });
+
             generateHardcodedPalettes();
             drawCropCanvas();
             initPresets();
@@ -291,8 +329,8 @@
 
         function handleImageLoad(image) {
             sourceImg = image;
-            const scaleX = 200 / sourceImg.width;
-            const scaleY = 228 / sourceImg.height;
+            const scaleX = WATCH_WIDTH / sourceImg.width;
+            const scaleY = WATCH_HEIGHT / sourceImg.height;
             const baseScale = Math.max(scaleX, scaleY);
             const statusEl = document.getElementById('corserror');
                 statusEl.textContent = '';
@@ -305,8 +343,8 @@
             imgScale = baseScale;
             zoomSlider.value = imgScale;
 
-            imgX = (200 - sourceImg.width * imgScale) / 2;
-            imgY = (228 - sourceImg.height * imgScale) / 2;
+            imgX = (WATCH_WIDTH - sourceImg.width * imgScale) / 2;
+            imgY = (WATCH_HEIGHT - sourceImg.height * imgScale) / 2;
 
             ['brightness', 'contrast', 'saturation', 'sharpen'].forEach(id => document.getElementById(id).value = 0);
             ['brVal', 'coVal', 'saVal', 'shVal'].forEach(id => document.getElementById(id).value = 0);
@@ -350,7 +388,7 @@
 
         function drawCropCanvas() {
             cropCtx.fillStyle = '#000';
-            cropCtx.fillRect(0, 0, 200, 228);
+            cropCtx.fillRect(0, 0, WATCH_WIDTH, WATCH_HEIGHT);
             if (sourceImg) {
                 cropCtx.drawImage(sourceImg, imgX, imgY, sourceImg.width * imgScale, sourceImg.height * imgScale);
             }
@@ -394,8 +432,8 @@
             if (!sourceImg) return;
             const oldScale = imgScale;
             imgScale = parseFloat(this.value);
-            imgX = 100 - (100 - imgX) * (imgScale / oldScale);
-            imgY = 114 - (114 - imgY) * (imgScale / oldScale);
+            imgX = (WATCH_WIDTH / 2) - ((WATCH_WIDTH / 2) - imgX) * (imgScale / oldScale);
+            imgY = (WATCH_HEIGHT / 2) - ((WATCH_HEIGHT / 2) - imgY) * (imgScale / oldScale);
             drawCropCanvas();
             processImage(); 
         });
@@ -434,7 +472,7 @@
 
         function autoAdjust() {
             if (!sourceImg) return;
-            const w = 200; const h = 228;
+            const w = WATCH_WIDTH; const h = WATCH_HEIGHT;
             const imgData = cropCtx.getImageData(0, 0, w, h).data;
             
             let pixelCount = imgData.length / 4;
@@ -569,7 +607,7 @@
             
             const bypassCheckbox = document.getElementById('bypass');
             if (bypassCheckbox.checked) {
-                const w = 200; const h = 228;
+                const w = WATCH_WIDTH; const h = WATCH_HEIGHT;
                 const imgData = cropCtx.getImageData(0, 0, w, h);
                 renderToCanvases(imgData.data, w, h, false);
                 return;
@@ -581,7 +619,7 @@
             let sh = parseInt(document.getElementById('sharpen').value);
             let ga = parseFloat(document.getElementById('gamma').value);
 
-            const w = 200; const h = 228;
+            const w = WATCH_WIDTH; const h = WATCH_HEIGHT;
             const imgData = cropCtx.getImageData(0, 0, w, h);
             const data = imgData.data;
             const floatData = new Float32Array(w * h * 3);
@@ -680,10 +718,10 @@
                 return;
             }
 
-            const finalImageData = outCanvas.finalImageData || outCtx.getImageData(0, 0, 200, 228);
+            const finalImageData = outCanvas.finalImageData || outCtx.getImageData(0, 0, WATCH_WIDTH, WATCH_HEIGHT);
             
             // OPRAVA: UPNG.encode vyžaduje ArrayBuffer (.buffer), nikoliv Uint8ClampedArray (.data)
-            const finalPngData = UPNG.encode([finalImageData.data.buffer], 200, 228, 0);
+            const finalPngData = UPNG.encode([finalImageData.data.buffer], WATCH_WIDTH, WATCH_HEIGHT, 0);
             
             // Přidání hodnoty watch_style do odesílaných nastavení
             const settings = {
@@ -696,16 +734,19 @@
         });
 
         // --- NOVÝ KÓD PRO VÝBĚR STYLU ---
-        const overlayFiles = ['overtopsec.png', 'overbotsec.png', 'overtop.png', 'overbot.png'];
+        const rectOverlayFiles = { 0: 'overtopsec.png', 1: 'overbotsec.png', 2: 'overtop.png', 3: 'overbot.png' };
+        const roundOverlayFiles = { 0: 'roundtop.png', 1: 'roundbot.png', 2: 'roundtopdate.png', 3: 'roundbotdate.png' };
 
         watchStyleSelect.addEventListener('change', (e) => {
-            const selectedStyle = parseInt(e.target.value, 10);
-            if (selectedStyle >= 0 && selectedStyle < overlayFiles.length) {
-                watchfaceOverlay.src = overlayFiles[selectedStyle];
-            }
+            const selectedValue = e.target.value;
+            const isRound = WATCH_WIDTH === 260;
+            const overlayFiles = isRound ? roundOverlayFiles : rectOverlayFiles;
+            watchfaceOverlay.src = overlayFiles[selectedValue];
         });
         // Nastavení výchozího překrytí při startu
-        watchfaceOverlay.src = overlayFiles[parseInt(watchStyleSelect.value, 10)];
+        if (WATCH_WIDTH !== 260) {
+             watchfaceOverlay.src = rectOverlayFiles[watchStyleSelect.value];
+        }
         // --- KONEC NOVÉHO KÓDU ---
 
 
@@ -719,10 +760,13 @@
             }
 
             const tempThumbCanvas = document.createElement('canvas');
-            tempThumbCanvas.width = 50;
-            tempThumbCanvas.height = 57;
+            const isRound = WATCH_WIDTH === 260;
+            tempThumbCanvas.width = isRound ? 65 : 50;
+            tempThumbCanvas.height = isRound ? 65 : 57;
+
+
             const tempThumbCtx = tempThumbCanvas.getContext('2d');
-            tempThumbCtx.drawImage(outCanvas, 0, 0, 50, 57);
+            tempThumbCtx.drawImage(cropCanvas, 0, 0, tempThumbCanvas.width, tempThumbCanvas.height);
             const thumbnailDataUrl = tempThumbCanvas.toDataURL();
 
             let imageDataToSave = sourceImg.src;
@@ -771,12 +815,12 @@
                 
                 const topPresetCanvas = document.getElementById(`preset-${slotIndex}`);
                 const topPresetCtx = topPresetCanvas.getContext('2d');
-                topPresetCtx.clearRect(0, 0, 50, 57);
+                topPresetCtx.clearRect(0, 0, topPresetCanvas.width, topPresetCanvas.height);
                 topPresetCtx.drawImage(tempThumbCanvas, 0, 0);
 
                 const bottomPresetCanvas = document.getElementById(`save-preset-thumb-${slotIndex}`);
                 const bottomPresetCtx = bottomPresetCanvas.getContext('2d');
-                bottomPresetCtx.clearRect(0, 0, 50, 57);
+                bottomPresetCtx.clearRect(0, 0, bottomPresetCanvas.width, bottomPresetCanvas.height);
                 bottomPresetCtx.drawImage(tempThumbCanvas, 0, 0);
                 // document.getElementById('status').textContent = `Configuration saved to slot ${slotIndex + 1}.`;
             } catch (e) {
@@ -793,11 +837,11 @@
 
             const topPresetCanvas = document.getElementById(`preset-${slotIndex}`);
             const topPresetCtx = topPresetCanvas.getContext('2d');
-            topPresetCtx.clearRect(0, 0, 50, 57);
+            topPresetCtx.clearRect(0, 0, topPresetCanvas.width, topPresetCanvas.height);
 
             const bottomPresetCanvas = document.getElementById(`save-preset-thumb-${slotIndex}`);
             const bottomPresetCtx = bottomPresetCanvas.getContext('2d');
-            bottomPresetCtx.clearRect(0, 0, 50, 57);
+            bottomPresetCtx.clearRect(0, 0, bottomPresetCanvas.width, bottomPresetCanvas.height);
 
             // document.getElementById('status').textContent = `Slot ${slotIndex + 1} has been cleared.`;
         }
@@ -821,8 +865,8 @@
                 sourceImg = img;
 
                 // 1. DŮLEŽITÉ: Přepočet limitů šoupátka Zoomu přesně pro načtený obrázek
-                const scaleX = 200 / sourceImg.width;
-                const scaleY = 228 / sourceImg.height;
+                const scaleX = WATCH_WIDTH / sourceImg.width;
+                const scaleY = WATCH_HEIGHT / sourceImg.height;
                 const baseScale = Math.max(scaleX, scaleY);
 
                 const zoomSlider = document.getElementById('zoom');
@@ -865,11 +909,11 @@
                     thumb.onload = () => {
                         const topPresetCanvas = document.getElementById(`preset-${i}`);
                         const topPresetCtx = topPresetCanvas.getContext('2d');
-                        topPresetCtx.drawImage(thumb, 0, 0);
+                        topPresetCtx.drawImage(thumb, 0, 0, topPresetCanvas.width, topPresetCanvas.height);
 
                         const bottomPresetCanvas = document.getElementById(`save-preset-thumb-${i}`);
                         const bottomPresetCtx = bottomPresetCanvas.getContext('2d');
-                        bottomPresetCtx.drawImage(thumb, 0, 0);
+                        bottomPresetCtx.drawImage(thumb, 0, 0, bottomPresetCanvas.width, bottomPresetCanvas.height);
                     };
                     thumb.src = presetData.thumbnailDataUrl;
                 }
