@@ -161,6 +161,7 @@
                 <h2>3. Export image</h2>
                 <span class="indicator">▼</span>
             </div>
+            <div id="export-error" style="color: #ff6b6b; padding: 0 15px; text-align: center; display: none; background: var(--panel);"></div>
             <div class="collapsible-content">
                 <div class="save-preset-group" style="padding-top: 15px; margin-bottom: 15px;">
                     <div class="save-preset-item">
@@ -242,6 +243,9 @@
 
         let sourceImg = null;
         let imgX = 0, imgY = 0, imgScale = 1;
+        let maskImg = new Image(); // Nový obrázek pro masku
+        // Načtení maskovacího obrázku ze souboru
+        maskImg.src = 'crop.png';
         let isDragging = false, startX, startY;
 
         const palettesData = { defined: [], sun: [] };
@@ -313,7 +317,7 @@
 
                 // Update select options for round watch
                 const watchStyleSelect = document.getElementById('watch-style');
-                watchStyleSelect.innerHTML = '<option value="1" selected>Bottom</option><option value="0">Top</option><option value="3">Bottom with date</option><option value="2">Top with date</option>';
+                watchStyleSelect.innerHTML = '<option value="1" selected>Bottom time</option><option value="0">Top time</option><option value="3">Bottom time with date</option><option value="2">Top time with date</option>';
                 watchfaceOverlay.src = 'roundbot.png'; // Set initial overlay for round
             }
 
@@ -601,7 +605,7 @@
             outCtx.putImageData(outData, 0, 0);
             sunCtx.putImageData(sunData, 0, 0);
         }
-
+        
         function processImage() {
             if (!sourceImg || palettesData.sun.length === 0) return;
             
@@ -609,6 +613,11 @@
             if (bypassCheckbox.checked) {
                 const w = WATCH_WIDTH; const h = WATCH_HEIGHT;
                 const imgData = cropCtx.getImageData(0, 0, w, h);
+                
+                if (WATCH_WIDTH === 260) {
+                    outCtx.putImageData(imgData, 0, 0);
+                    outCanvas.finalImageData = outCtx.getImageData(0, 0, w, h);
+                }
                 renderToCanvases(imgData.data, w, h, false);
                 return;
             }
@@ -684,6 +693,21 @@
             }
 
             renderToCanvases(floatData, w, h, true);
+
+            // Pro kulaté hodinky aplikujeme kruhový ořez pomocí masky, abychom zmenšili velikost PNG
+            if (WATCH_WIDTH === 260) {
+                // 1. Uložíme si finální ditherovaný obrázek na dočasné plátno
+                const finalImageCanvas = document.createElement('canvas');
+                finalImageCanvas.width = w; finalImageCanvas.height = h;
+                finalImageCanvas.getContext('2d').putImageData(outCanvas.finalImageData, 0, 0);
+
+                // 2. Aplikujeme masku. Operace 'multiply' ztmaví obrázek tam, kde je maska černá.
+                outCtx.globalCompositeOperation = 'multiply';
+                outCtx.drawImage(maskImg, 0, 0, w, h);
+                outCtx.globalCompositeOperation = 'source-over'; // Vrátíme zpět do normálu
+
+                outCanvas.finalImageData = outCtx.getImageData(0, 0, w, h);
+            }
         }
 
         document.getElementById('bypass').addEventListener('change', function(e) {
@@ -709,7 +733,8 @@
             return window.btoa(binary);
         }
 
-	document.getElementById('sendToWatchBtn').addEventListener('click', () => {
+	document.getElementById('sendToWatchBtn').addEventListener('click', function() { // Použijeme 'function', aby 'this' odkazovalo na tlačítko
+            const exportErrorEl = document.getElementById('export-error');
             const statusEl = document.getElementById('status');
             statusEl.style.display = 'none'; // Hide previous errors
 
@@ -723,6 +748,18 @@
             // OPRAVA: UPNG.encode vyžaduje ArrayBuffer (.buffer), nikoliv Uint8ClampedArray (.data)
             const finalPngData = UPNG.encode([finalImageData.data.buffer], WATCH_WIDTH, WATCH_HEIGHT, 0);
             
+            const MAX_SIZE = 30 * 1024; // 32 KB limit
+            if (finalPngData.byteLength > MAX_SIZE) {
+                exportErrorEl.innerHTML = `<b>Try to tune the image more.</b> It is ${(finalPngData.byteLength / 1024).toFixed(1)} KB (limit is 30 KB).`;
+                exportErrorEl.style.display = 'block';
+                exportErrorEl.style.paddingTop = '15px';
+                
+                // Zvýrazníme tlačítko pro odeslání červeně, aby bylo jasné, že se nic neodeslalo
+                this.style.backgroundColor = '#c0392b';
+                // Vrátíme barvu zpět a skryjeme chybu
+                setTimeout(() => { this.style.backgroundColor = 'var(--accent)'; }, 2000); // Vrátíme barvu zpět
+                return;
+            }
             // Přidání hodnoty watch_style do odesílaných nastavení
             const settings = {
                 'png_base64': bufferToBase64(finalPngData),
